@@ -1,0 +1,61 @@
+.Container {
+  border-radius: 10px;
+  padding: 20px;
+  margin: 20px;
+  background-color: #000;
+  color: #fff;
+  box-shadow: 0px 0px 20px rgb(165, 165, 165);
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  transition: 0.7s;
+}
+
+.Logo {
+  width: 200px;
+  margin: 10px;
+  margin-bottom: 30px;
+}
+
+.Input {
+  color:#fff;
+  background-color: #2c2c2c;
+  border: #5a5a5a 0px solid;
+  border-radius: 10px;
+  font-size: 20px;
+  padding: 10px;
+  margin: 10px 0;
+  box-shadow: 0px 0px 5px rgb(165, 165, 165);
+  transition: 0.7s;
+}
+
+.Input:focus {
+  outline-width: 0;
+  box-shadow: 0px 0px 8px rgb(165, 165, 165);
+  transition: 0.3s;
+}
+
+.Button {
+  border: 0px solid transparent;
+  text-decoration: none;
+  color: #000;
+  background-color: #fff;
+  border-radius: 10px;
+  font-size: 20px;
+  padding: 15px;
+  margin-top: 20px;
+  transition: 0.5s;
+}
+
+.Button:hover {
+  background-color: #000000;
+  color: #fff;
+  box-shadow: 0px 0px 8px rgb(255, 255, 255);
+  transition: 0.3s;
+}
+
+.Button:active {
+  background-color: #464646;
+  color: #fff;
+  transition: 0s !important;
+}
