@@ -39,7 +39,7 @@ next.prepare().then(() => {
   app.use(cookieParser())
   app.use(bodyParser())
 
-  app.use('/nauth-api',async function (req, res, next) {
+  app.use('/api/private', async function (req, res, next) {
 
     var decoded = null;
     await admin.auth()
@@ -48,16 +48,15 @@ next.prepare().then(() => {
           decoded = decodedToken;
         })
       .catch((error) => {
+        console.log(error);
         decoded = null;
       });
 
-
-    if (!decoded.email_verified) {
+    if (!decoded?.email_verified) {
       res.json({ error: "email-verefication-required" });
       decoded = null;
       return;
     }
-
 
     await client.connect();
     const database = client.db("users");
@@ -66,10 +65,10 @@ next.prepare().then(() => {
     var user = await users.findOne({ uid: decoded.uid });
 
     if (user == null) {
-      await users.insertOne({ uid: decoded.uid, email: decoded.email, createdAt: new Date() });
+      await users.insertOne({ uid: decoded.uid, email: decoded.email, createdAt: new Date(), fullfilled: false, name: "", username: "", gender: "" });
       user = await users.findOne({ uid: decoded.uid });
     }
-
+    
     client.close();
 
     req.user = user;
@@ -85,8 +84,8 @@ next.prepare().then(() => {
 
 
   //auth api requests
-  app.get('/nauth-api/checkToken', async (req, res) => {
-    res.json({ error: "success", user: req.user });
+  app.get('/api/private/getUser', async (req, res) => {
+    res.json({ status: "success", user: req.user });
   })
 
   app.all('*', (req, res) => {

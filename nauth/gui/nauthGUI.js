@@ -16,11 +16,8 @@ export function NAUTH_Login({ onAuth, logoURL, registerURL, darkMode }) {
 
     const [Login, setLogin] = useState("");
     const [Password, setPassword] = useState("");
-
     const [Status, setStatus] = useState("");
-
     const [cookies, setCookie] = useCookies(['']);
-
 
     if (typeof darkMode == 'undefined')
         darkMode = false;
@@ -88,14 +85,11 @@ export function NAUTH_Login({ onAuth, logoURL, registerURL, darkMode }) {
 
         </div >
     )
-
-
 }
 
 export function NAUTH_Register({ onAuth, logoURL, loginURL, darkMode }) {
 
     const [cookies, setCookie] = useCookies(['']);
-
 
     initFirebase();
 
@@ -153,7 +147,7 @@ export function NAUTH_Register({ onAuth, logoURL, loginURL, darkMode }) {
                                     return;
                                 }
 
-                                setCookie('token', userCredential.user.accessToken);
+                                setCookie('token', userCredential.user.accessToken, { domain: 'http://nozsa.com' });
                                 setStatus("success");
                                 onAuth(userCredential)
                             })
