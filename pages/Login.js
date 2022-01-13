@@ -15,11 +15,6 @@ export default function Page() {
     return (
         <div className="Container" style={{ flexDirection: "column" }}>
 
-            <div style={{ fontSize: "30px", margin: "20px" }}>
-                {Status}
-            </div>
-
-
                 <NAUTH_Login
                     onAuth={(data) => {
 
