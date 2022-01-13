@@ -1,6 +1,7 @@
 const port = 3000
 const dev = process.env.NODE_ENV !== 'production'
 
+
 const { uuid } = require('uuidv4');
 
 //nextJS server
@@ -33,54 +34,62 @@ admin.initializeApp({
 
 
 
+console.log(dev)
+
 next.prepare().then(() => {
 
   app.use(cors())
   app.use(cookieParser())
   app.use(bodyParser())
+  
+  app.get('/api/getCookies', async function (req, res) {
+    res.json(req.cookies);
+  })
+
 
   app.use('/api/private', async function (req, res, next) {
 
     var decoded = null;
-    await admin.auth()
-      .verifyIdToken(req.cookies.token).then(
-        (decodedToken) => {
-          decoded = decodedToken;
-        })
-      .catch((error) => {
-        console.log(error);
-        decoded = null;
-      });
+    try {
 
-    if (!decoded?.email_verified) {
-      res.json({ error: "email-verefication-required" });
-      decoded = null;
-      return;
-    }
+      await admin.auth()
+        .verifyIdToken(req.cookies.token).then(
+          (decodedToken) => {
+            decoded = decodedToken;
+          })
+        .catch((error) => {
+          decoded = null;
+        });
+    } catch { };
+
+    if (decoded == null)
+      return res.json({ error: "auth-required" });
+
+    if (decoded && !decoded.email_verified)
+      return res.json({ error: "email-verefication-required" });
+
 
     await client.connect();
     const database = client.db("users");
     const users = database.collection("users");
 
-    var user = await users.findOne({ uid: decoded.uid });
+    var user = await users.findOne({ uid: decoded?.uid });
 
     if (user == null) {
       await users.insertOne({ uid: decoded.uid, email: decoded.email, createdAt: new Date(), fullfilled: false, name: "", username: "", gender: "" });
       user = await users.findOne({ uid: decoded.uid });
     }
-    
+
     client.close();
 
     req.user = user;
-
-    if (decoded != null)
-      next();
-    else
-      res.json({ error: "auth-required" });
-
+    next();
   })
 
 
+  app.get('/api/private/getUser', async function (req, res) {
+    res.json(req.user);
+  })
 
 
   //auth api requests

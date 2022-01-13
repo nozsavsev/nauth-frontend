@@ -147,7 +147,7 @@ export function NAUTH_Register({ onAuth, logoURL, loginURL, darkMode }) {
                                     return;
                                 }
 
-                                setCookie('token', userCredential.user.accessToken, { domain: 'http://nozsa.com' });
+                                setCookie('token', userCredential.user.accessToken,{domain:"http://localhost:3000"});
                                 setStatus("success");
                                 onAuth(userCredential)
                             })
