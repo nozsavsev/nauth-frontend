@@ -1,36 +1,48 @@
-import React, { useState, useEffect } from 'react'
-import axios from "axios";
+const dev = process.env.NODE_ENV !== 'production'
 
-import { NAUTH_Login, NAUTH_Register } from '../nauth/gui/nauthGUI';
+import cookie from 'react-cookies'
+import React, { useState, useEffect } from 'react'
+import { useRouter } from 'next/router';
+import { NAUTH_Register } from '../nauth/gui/nauthGUI';
 
 export default function Page() {
 
+    const router = useRouter()
     const [location, setLocation] = useState(null);
+    const [darkMode, setDarkMode] = useState(null);
+    const [Back, setBack] = useState(null);
 
     useEffect(() => {
         setLocation(window.location);
 
-        let params = (new URL(document.location)).searchParams;
-        let back = params.get("back");
+        if (!cookie.load('accepted')) {
+            router.push('/legal/accept');
+        }
 
-        console.log(back);
+        let params = (new URL(document.location)).searchParams;
+        setDarkMode(params.get("black") === 'true' ? true : false);
+        setBack(params.get("back"));
 
     }, []);
 
 
     return (
-        <div className="Container" style={{ flexDirection: "column" }}>
+        <div className="Container" style={{ flexDirection: "column", backgroundColor: darkMode ? "black" : "white" }}>
             <div style={{ display: "flex" }}>
 
                 <NAUTH_Register
                     onAuth={(data) => {
 
-                  
+                        router.push(Back !== null ? back : "https://nozsa.com");
 
                     }}
-                    logoURL="/LogoBlack.svg"
-                    darkMode={false}
-                    loginURL={'/Login'}
+
+                    onLogin={() => {
+                        router.push(`/Login${Back !== null ? `?back=${Back}` : ''}`);
+                    }}
+
+                    logoURL={darkMode ? "/LogoWhite.svg" : "/LogoBlack.svg"}
+                    darkMode={darkMode}
                 />
 
             </div>

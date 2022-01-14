@@ -4,7 +4,7 @@
   margin: 20px;
   background-color: #000;
   color: #fff;
-  box-shadow: 0px 0px 20px rgb(165, 165, 165);
+  box-shadow: 0px 0px 20px rgb(44, 44, 44);
   display: flex;
   align-items: center;
   flex-direction: column;
@@ -44,18 +44,18 @@
   font-size: 20px;
   padding: 15px;
   margin-top: 20px;
-  transition: 0.5s;
+  transition: 0.2s;
 }
 
 .Button:hover {
-  background-color: #000000;
+  background-color: #464646;
   color: #fff;
-  box-shadow: 0px 0px 8px rgb(255, 255, 255);
+  box-shadow: 0px 0px 0px rgb(255, 255, 255);
   transition: 0.3s;
 }
 
 .Button:active {
-  background-color: #464646;
-  color: #fff;
+  background-color: #FFF;
+  color: #000;
   transition: 0s !important;
 }

@@ -1,23 +1,23 @@
+const dev = process.env.NODE_ENV !== 'production'
+
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
 import React, { useState, } from 'react'
 
-import { useCookies } from 'react-cookie';
+import cookies from 'react-cookies';
 
 import initFirebase from "../firebase";
-
 import styles_white from './nauth_white.module.css'
 import styles_black from './nauth_black.module.css'
 
 
 
-export function NAUTH_Login({ onAuth, logoURL, registerURL, darkMode }) {
+export function NAUTH_Login({ onAuth, onRegister, logoURL, darkMode }) {
 
     initFirebase();
 
     const [Login, setLogin] = useState("");
     const [Password, setPassword] = useState("");
     const [Status, setStatus] = useState("");
-    const [cookies, setCookie] = useCookies(['']);
 
     if (typeof darkMode == 'undefined')
         darkMode = false;
@@ -68,18 +68,19 @@ export function NAUTH_Login({ onAuth, logoURL, registerURL, darkMode }) {
                                     return;
                                 }
 
-                                setCookie('token', userCredential.user.accessToken);
+                                cookies.save('token', userCredential.user.accessToken, { path: "/", domain: dev ? "localhost" : ".nozsa.com" });
+
                                 setStatus("success");
                                 onAuth(userCredential)
                             })
                             .catch((error) => {
                                 console.log(error);
-                                setCookie('token', '');
+                                cookies.save('token', '', { path: "/", domain: dev ? "localhost" : ".nozsa.com" });
                                 setStatus("check email or password");
                             });
 
                     }}>Take me in</button>
-                <a style={{ textDecoration: "none", transition: "1s", color: darkMode ? "white" : "black", margin: "15px", userSelect: "none" }} href={registerURL} >Register</a>
+                <div style={{ textDecoration: "none", transition: "1s", color: darkMode ? "white" : "black", margin: "15px", userSelect: "none" }} onClick={onRegister} >Register</div>
 
             </div>
 
@@ -87,9 +88,7 @@ export function NAUTH_Login({ onAuth, logoURL, registerURL, darkMode }) {
     )
 }
 
-export function NAUTH_Register({ onAuth, logoURL, loginURL, darkMode }) {
-
-    const [cookies, setCookie] = useCookies(['']);
+export function NAUTH_Register({ onLogin, onAuth, logoURL, darkMode }) {
 
     initFirebase();
 
@@ -147,17 +146,18 @@ export function NAUTH_Register({ onAuth, logoURL, loginURL, darkMode }) {
                                     return;
                                 }
 
-                                setCookie('token', userCredential.user.accessToken,{domain:"http://localhost:3000"});
+                                cookies.save('token', userCredential.user.accessToken, { path: "/", domain: dev ? "localhost" : ".nozsa.com" });
+
                                 setStatus("success");
                                 onAuth(userCredential)
                             })
                             .catch((error) => {
-                                setCookie('token', '');
+                                cookies.save('token', '', { path: "/", domain: dev ? "localhost" : ".nozsa.com" });
                                 setStatus("something wrong\n try another login or password");
                             });
 
                     }}>Register</button>
-                <a style={{ textDecoration: "none", transition: "1s", color: darkMode ? "white" : "black", margin: "15px" }} href={loginURL} >Login</a>
+                <div style={{ textDecoration: "none", transition: "1s", color: darkMode ? "white" : "black", margin: "15px", userSelect: "none" }} onClick={onLogin} >Login</div>
 
             </div>
 
