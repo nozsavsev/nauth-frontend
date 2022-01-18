@@ -41,7 +41,7 @@ next.prepare().then(() => {
   app.use(cors())
   app.use(cookieParser())
   app.use(bodyParser())
-  
+
   app.get('/api/getCookies', async function (req, res) {
     res.json(req.cookies);
   })
@@ -76,7 +76,7 @@ next.prepare().then(() => {
     var user = await users.findOne({ uid: decoded?.uid });
 
     if (user == null) {
-      await users.insertOne({ uid: decoded.uid, email: decoded.email, createdAt: new Date(), fullfilled: false, name: "", username: "", gender: "" });
+      await users.insertOne({ uid: decoded.uid, email: decoded.email, createdAt: new Date(), fullfilled: false, name: "", username: "", gender: "", role: "", testerGuiAllowed: false });
       user = await users.findOne({ uid: decoded.uid });
     }
 
@@ -92,10 +92,52 @@ next.prepare().then(() => {
   })
 
 
+  app.get('/api/private/getUsers', async function (req, res) {
+
+    await client.connect();
+    const database = client.db("users");
+    const users = database.collection("users");
+
+    if (req.user.role === 'admin') {
+      var users_data = [];
+      await users.find().forEach((e) => { users_data.push(e) });
+      res.json(users_data);
+    }
+    else {
+      res.json({});
+    }
+  })
+
+
   //auth api requests
   app.get('/api/private/getUser', async (req, res) => {
     res.json({ status: "success", user: req.user });
   })
+
+
+  app.post('/api/private/updateUser', async (req, res) => {
+
+    if (req.user.role === 'admin')
+      if (req.user.uid !== req.body.u.uid) {
+
+        await client.connect();
+        const database = client.db("users");
+        const users = database.collection("users");
+
+        console.log(req.body.u.role, req.body.u.testerGuiAllowed);
+
+        await users.updateOne({ uid: req.body.u.uid }, { $set: { role: req.body.u.role } });
+        await users.updateOne({ uid: req.body.u.uid }, { $set: { testerGuiAllowed: req.body.u.testerGuiAllowed } });
+        client.close();
+
+      }
+
+
+    res.json({});
+  })
+
+
+
 
   app.all('*', (req, res) => {
     handle(req, res)
