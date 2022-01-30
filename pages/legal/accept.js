@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import cookie from 'react-cookies'
 import { useRouter } from 'next/router'
 
@@ -7,17 +7,11 @@ const dev = process.env.NODE_ENV !== 'production'
 
 export default function App() {
     const router = useRouter()
-    var backRedirect = "";
+    const [backRedirect, setBack] = useState(null);
 
     useEffect(() => {
-
-        backRedirect = router.query.backRedirect;
-
-
-        const query = new URLSearchParams(this.props.location.search);
-        if (query.get('back') !== null)
-            backRedirect = query.get('back')
-
+        const query = new URLSearchParams(window.location.search);
+        setBack(query.get('back'))
     }, [])
 
     return (
@@ -31,7 +25,13 @@ export default function App() {
                 style={{ background: "black", color: "white", fontSize: "20px", border: "none", padding: "10px", margin: "10px", borderRadius: "10px" }}
                 onClick={() => {
                     cookie.save('accepted', true, { path: "/", domain: dev ? "localhost" : ".nozsa.com" });
-                    router.push(backRedirect)
+
+                    if (backRedirect)
+                        router.push(backRedirect)
+                    else
+                        router.back()
+
+
                 }}
             >Press to accept</button>
         </div>
