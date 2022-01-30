@@ -7,7 +7,8 @@ const dev = process.env.NODE_ENV !== 'production'
 
 export default function App() {
     const router = useRouter()
-    const backRedirect = "";
+    var backRedirect = "";
+
     useEffect(() => {
 
         backRedirect = router.query.backRedirect;
