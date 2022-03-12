@@ -1,5 +1,5 @@
 body {
-  font-family: "Open Sans", sans-serif;
+  font-family: 'Roboto', sans-serif;
 }
 
 .Container {
@@ -21,4 +21,42 @@ body {
 ::-webkit-scrollbar {
   width: 0px;
   height: 0px;
+}
+
+.flatInput {
+  border: 2px solid #ccc;
+  border-radius: 10px;
+  padding: 0.5em;
+  margin: 0.5em;
+  outline: none;
+}
+
+.flatInput:focus {
+  border: 2px solid rgb(160, 160, 160);
+  border-radius: 10px;
+  padding: 0.5em;
+  margin: 0.5em;
+  outline: none;
+}
+
+.Button {
+  border: 2px solid black;
+  border-radius: 10px;
+  color: white;
+  background-color: #000000;
+  font-size: large;
+  padding: 0.5em;
+  margin: 0.5em;
+  outline: none;
+  cursor: pointer;
+  transition: 0.5s;
+
+  transition: color 0.09s, background-color 0.09s;
+}
+
+.Button:active {
+  border: 2px solid black;
+  color: #000000;
+  background-color: #ffffff;
+  transition: 0.05s;
 }
