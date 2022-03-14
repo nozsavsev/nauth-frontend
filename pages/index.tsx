@@ -236,13 +236,6 @@ export default function Page({ socket, user, authStatus, setAuthStatus, setUser 
             <div className="Container" style={{ flexDirection: "column", backgroundColor: "white" }}>
 
 
-                <ChangePassword onSuccess={(data) => {
-
-
-
-                }} />
-
-
                 <SessionManager sessions={user?.sessionStorage} />
 
             </div>
