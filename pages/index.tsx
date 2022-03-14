@@ -96,32 +96,7 @@ export function Login({ onSuccess }: { onSuccess: any }) {
         </div>
     )
 }
-export function SessionManager({ onError }: { onError: any }) {
-
-    const [sessions, setSessions] = useState([]);
-
-    useEffect(() => {
-
-        var interval = setInterval(() => {
-
-            axios.get(`${location.origin}/api/private/getSessions`).then(res => {
-
-                if (res.data.code === "SESFET") {
-                    setSessions(res.data.sessions);
-                }
-                else {
-                    onError(res.data);
-                }
-            }).catch(err => { console.log(err); });
-
-
-
-        }, 1000)
-
-        return () => { clearInterval(interval) }
-
-    })
-
+export function SessionManager({ sessions }: any) {
 
     return (
         <div style={{
@@ -139,7 +114,7 @@ export function SessionManager({ onError }: { onError: any }) {
             <table>
                 <tbody>
                     {
-                        sessions.map((session, index) => {
+                        sessions?.map((session, index) => {
 
                             return <tr key={index}>
 
@@ -178,46 +153,66 @@ export function SessionManager({ onError }: { onError: any }) {
 
 
 
-export default function Page() {
+
+export function ChangePassword({ onSuccess }: { onSuccess: any }) {
+
+    const [status, setStatus] = useState('');
+
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+
+    return (
+        <div style={{
+            margin: "20px",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: "1em",
+            borderRadius: "0.5em",
+            boxShadow: "0px 0px 20px 1px #ccc"
+        }}>
+
+            <div style={{ minHeight: "1em", fontSize: "0.7em", maxWidth: "15em", wordBreak: "break-word", margin: "0.2em" }}>
+                {status}
+            </div>
+
+            <input className='flatInput' value={username} placeholder="username or email" onChange={(e) => { setUsername(e.target.value); }} />
+            <input className='flatInput' value={password} placeholder="password" type={"password"} onChange={(e) => { setPassword(e.target.value); }} />
+
+            <button className='Button' onClick={() => {
+                var payload = Buffer.from(JSON.stringify({ username: username, password: password })).toString('base64');;
+                axios.get(`${location.origin}/api/public/LoginWithPassword?data=${payload}`).then(res => {
+
+                    if (res.data.code === "SLOGIN")
+                        onSuccess(res.data)
+                    else
+                        setStatus(res.data.message);
+
+                }).catch(err => { console.log(err); });
+            }}>Login</button>
+        </div>
+    )
+}
+
+
+
+
+
+export default function Page({ socket, user, authStatus, setAuthStatus, setUser }) {
 
     const router = useRouter()
     const [location, setLocation] = useState(null);
+
     const [token, __setToken] = useState(cookie.load('token'));
-
-    const [authStatus, setAuthStatus] = useState(false);
-    const [user, setUser] = useState(false);
-
     function setToken(token: string) {
         __setToken(token);
-        cookie.save('token', token, { path: '/' });
+        cookie.save("token", token, { path: "/", expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 365) });
     }
+
 
     useEffect(() => {
         setLocation(window.location);
-
-        var params = (new URL(document.location.toString())).searchParams;
-        //params.get('darkMode')
-
-        if (token) {
-
-
-            var payload = Buffer.from(JSON.stringify({ token: token })).toString('base64');;
-
-            axios.get(`${window.location.origin}/api/public/AuthByToken?data=${payload}`).then(res => {
-               
-                console.log(res.data);
-
-                if (res.data.code === "TOKDEC") {
-                    setAuthStatus(true);
-                    setUser(res.data.user);
-                    setToken(res.data.newToken);
-                }
-
-            }).catch(err => { console.log(err); });
-
-        }
-
-
     }, []);
 
 
@@ -225,23 +220,31 @@ export default function Page() {
     if (authStatus === false)
         return (
             <div className="Container" style={{ flexDirection: "column", backgroundColor: "white" }}>
+                <Login onSuccess={(data) => {
 
-                <Login onSuccess={(data) => { setToken(data.token); setAuthStatus(true); setUser(data.user); }} />
+                    setAuthStatus(true);
+                    setUser(data.user);
 
+                    setToken(data.token);
+                    console.log(data);
+                    socket?.emit('auth', { token: data.token });
+                }} />
             </div>
         )
     else
         return (
             <div className="Container" style={{ flexDirection: "column", backgroundColor: "white" }}>
 
-                <SessionManager onError={(data) => {
-                    setToken(null);
-                    setAuthStatus(false);
-                    setUser(null);
+
+                <ChangePassword onSuccess={(data) => {
+
+
+
                 }} />
+
+
+                <SessionManager sessions={user?.sessionStorage} />
 
             </div>
         )
-
-
 }
