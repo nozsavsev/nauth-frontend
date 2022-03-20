@@ -3,8 +3,11 @@ const dev = process.env.NODE_ENV !== 'production'
 import cookie from 'react-cookies'
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/router';
+import dynamic from "next/dynamic";
 import axios from 'axios';
-
+import QrReader from 'react-qr-scanner'
+import { v4 } from 'uuid';
+import QRCode from 'qrcode.react'
 
 export function Register({ onSuccess }: { onSuccess: any }) {
 
@@ -34,9 +37,13 @@ export function Register({ onSuccess }: { onSuccess: any }) {
 
             <input className='flatInput' value={username} placeholder="username" onChange={(e) => { setUsername(e.target.value); }} />
             <input className='flatInput' value={email} placeholder="email" onChange={(e) => { setEmail(e.target.value); }} />
-
             <input className='flatInput' value={password} placeholder="password" type={"password"} onChange={(e) => { setPassword(e.target.value); }} />
             <input className='flatInput' value={passwordOneMoreTime} placeholder="one more time" type={"password"} onChange={(e) => { setPasswordOneMoreTime(e.target.value); }} />
+
+            <div style={{ color: "#bbb", fontSize: 14, maxWidth: "17em", marginTop: "1em" }}>
+                I agree to<br />
+                <a style={{ color: "#888", textDecoration: "none" }} target="_blank" href="/legal/tos">Terms of Service</a> and <a style={{ color: "#888", textDecoration: "none" }} target="_blank" href="/legal/prp">Privacy policy</a>
+            </div>
 
             <button className='Button' onClick={() => {
 
@@ -56,6 +63,7 @@ export function Register({ onSuccess }: { onSuccess: any }) {
         </div>
     )
 }
+
 export function Login({ onSuccess }: { onSuccess: any }) {
 
     const [status, setStatus] = useState('');
@@ -96,6 +104,7 @@ export function Login({ onSuccess }: { onSuccess: any }) {
         </div>
     )
 }
+
 export function SessionManager({ sessions }: any) {
 
     return (
@@ -158,8 +167,9 @@ export function ChangePassword({ onSuccess }: { onSuccess: any }) {
 
     const [status, setStatus] = useState('');
 
-    const [username, setUsername] = useState('');
+    const [oldPassword, setOldPassword] = useState('');
     const [password, setPassword] = useState('');
+    const [passwordOneMoreTime, setPasswordOneMoreTime] = useState('');
 
     return (
         <div style={{
@@ -177,23 +187,34 @@ export function ChangePassword({ onSuccess }: { onSuccess: any }) {
                 {status}
             </div>
 
-            <input className='flatInput' value={username} placeholder="username or email" onChange={(e) => { setUsername(e.target.value); }} />
+
+
+            <input className='flatInput' value={oldPassword} placeholder="current password" type={"password"} onChange={(e) => { setOldPassword(e.target.value); }} />
+
             <input className='flatInput' value={password} placeholder="password" type={"password"} onChange={(e) => { setPassword(e.target.value); }} />
+            <input className='flatInput' value={passwordOneMoreTime} placeholder="one more time" type={"password"} onChange={(e) => { setPasswordOneMoreTime(e.target.value); }} />
 
             <button className='Button' onClick={() => {
-                var payload = Buffer.from(JSON.stringify({ username: username, password: password })).toString('base64');;
-                axios.get(`${location.origin}/api/public/LoginWithPassword?data=${payload}`).then(res => {
 
-                    if (res.data.code === "SLOGIN")
+                if (password !== passwordOneMoreTime)
+                    return setStatus("Passwords don't match");
+
+                var payload = Buffer.from(JSON.stringify({ newPassword: password, password: oldPassword })).toString('base64');;
+                axios.get(`${location.origin}/api/private/changePassword?data=${payload}`).then(res => {
+
+                    if (res.data.code === "PASSCH")
                         onSuccess(res.data)
                     else
                         setStatus(res.data.message);
 
                 }).catch(err => { console.log(err); });
-            }}>Login</button>
+            }}>Change</button>
         </div>
     )
 }
+
+
+
 
 
 
@@ -203,6 +224,9 @@ export default function Page({ socket, user, authStatus, setAuthStatus, setUser 
 
     const router = useRouter()
     const [location, setLocation] = useState(null);
+    const [qrLoginToken, setQrLoginToken] = useState(v4());
+
+    const [scanned, setScanned] = useState(false);
 
     const [token, __setToken] = useState(cookie.load('token'));
     function setToken(token: string) {
@@ -210,30 +234,35 @@ export default function Page({ socket, user, authStatus, setAuthStatus, setUser 
         cookie.save("token", token, { path: "/", expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 365) });
     }
 
-
     useEffect(() => {
         setLocation(window.location);
     }, []);
 
-
-
     if (authStatus === false)
         return (
-            <div className="Container" style={{ flexDirection: "column", backgroundColor: "white" }}>
-                <Login onSuccess={(data) => {
+            <div className="Container" style={{ flexDirection: "row", backgroundColor: "white" }}>
+                <Login
+                    onSuccess={(data) => {
+                        setAuthStatus(true);
+                        setUser(data.user);
 
-                    setAuthStatus(true);
-                    setUser(data.user);
-
-                    setToken(data.token);
-                    console.log(data);
-                    socket?.emit('auth', { token: data.token });
-                }} />
+                        setToken(data.token);
+                        console.log(data);
+                        socket?.emit('auth', { token: data.token });
+                    }} />
             </div>
         )
     else
         return (
             <div className="Container" style={{ flexDirection: "column", backgroundColor: "white" }}>
+
+
+
+                <ChangePassword onSuccess={(data) => {
+
+                    console.log(data);
+
+                }} />
 
 
                 <SessionManager sessions={user?.sessionStorage} />

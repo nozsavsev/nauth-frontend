@@ -3,6 +3,7 @@ const port = 3000
 const dev = process.env.NODE_ENV !== 'production'
 const { uuid, regex } = require('uuidv4');
 const crypto = require('crypto')
+const userAgent = require('user-agent');
 
 //nextJS server
 const nextjs = require('next')
@@ -33,6 +34,69 @@ const client = new MongoClient(mongoURL);
 //init jsonwebtoken
 const jwt = require('jsonwebtoken');
 const JWT_key = "ad47eef533a2e5271b64db04ce160939cef2099550cd7c119f835e75c4a2ed06"
+
+
+/*
+    codes
+        PASMSS - passwords are the same 
+        PADMAR - new password doesn't match regex
+        INPASS - incorrect password 
+        PASSCH - password changed
+*/
+
+async function changePassword(password, newPassword, user, session) {
+
+  var passwordRegex = /^[A-z0-9*()$%@#]{8,32}$/gm;
+
+  if (password === newPassword)
+    return { status: "error", message: "passwords are the same", code: "PASMSS" }
+
+  if (newPassword.length < 8 || newPassword.length > 32 || passwordRegex.exec(newPassword.password)?.length !== 1)
+    return { status: "error", message: "password doesn't match regex (8-32 symbols [A-z0-9*()$%@#])", code: "PADMAR" }
+
+
+
+  var saltedPasswordHash = crypto.createHash(user.credentials.algorithm)
+    .update(user.credentials.salt)
+    .update(password)
+    .update(user.credentials.salt)
+    .digest('hex');
+
+  if (saltedPasswordHash !== user.credentials.passwordHash)
+    return { status: "error", message: "incorrect password", code: "INPASS" }
+
+  user.sessionStorage.forEach((ses, si) => {
+    if (ses.sessionID !== session.sessionID) {
+      io.to(ses.sessionID).emit('sessionRevoked');
+      io.in(ses.sessionID).socketsLeave(user.id);
+      io.in(ses.sessionID).socketsLeave(ses.sessionID);
+
+      io.to(user.id).emit('sessionExpired', { sessionID: ses.sessionID });
+
+    }
+  })
+
+
+
+  user.sessionStorage = [session];
+
+  user.credentials.passwordHash = crypto.createHash(user.credentials.algorithm)
+    .update(user.credentials.salt)
+    .update(newPassword)
+    .update(user.credentials.salt)
+    .digest('hex');
+
+  //insert user to database
+  await client.connect();
+  const database = client.db("auth");
+  const users = database.collection("users");
+  await users.updateOne({ id: user.id }, { $set: { credentials: user.credentials, sessionStorage: user.sessionStorage } });
+
+  return { status: "success", message: "password changed", code: "PASSCH" }
+}
+
+
+
 
 /*
 codes
@@ -361,6 +425,8 @@ next.prepare().then(() => {
         socket.join(auth.user.id);
         socket.join(auth.session.sessionID);
 
+        socket.auth = { authentificated: true, userID: auth.user.id, sessionID: auth.session.sessionID };
+
         auth.user.sessionStorage = auth.user.sessionStorage.map(ses => {
           return {
             current: ses.sessionID === auth.session.sessionID,
@@ -392,10 +458,9 @@ next.prepare().then(() => {
     })
 
     socket.on('disconnect', () => {
-
       console.log("disconnect");
-
     })
+
   });
 
   app.use(cors())
@@ -456,6 +521,11 @@ next.prepare().then(() => {
   app.get('/api/public/LoginWithPassword', async function (req, res) {
     var data = JSON.parse(Buffer.from(req.query.data, 'base64').toString());
     return res.json(await loginWithPassword(data.username, data.password, req));
+  })
+
+  app.get('/api/private/ChangePassword', async function (req, res) {
+    var data = JSON.parse(Buffer.from(req.query.data, 'base64').toString());
+    return res.json(await changePassword(data.password, data.newPassword, req.user, req.session));
   })
 
   /*
