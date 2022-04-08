@@ -9,7 +9,7 @@ import QrReader from 'react-qr-scanner'
 import { v4 } from 'uuid';
 import QRCode from 'qrcode.react'
 
-import { NAUTH_SocketConnector, NAUTH_Rest } from './_app'
+import { NAUTH_SocketConnector } from './_app'
 
 import { makeAutoObservable } from "mobx"
 import { observer } from "mobx-react"
@@ -55,15 +55,15 @@ export function Register({ onSuccess }: { onSuccess: any }) {
                 if (password !== passwordOneMoreTime)
                     return setStatus("Passwords don't match");
 
+                var payload = Buffer.from(JSON.stringify({ username: username, email: email, password: password })).toString('base64');;
+                axios.get(`${location.origin}/api/public/registerUserWithEmail?data=${payload}`).then(res => {
 
-                var res = await NAUTH_Rest.registerUserWithEmail(username, email, password);
+                    if (res.data.code === "SUREUS")
+                        onSuccess(res.data)
+                    else
+                        setStatus(res.data.message);
 
-
-                if (res.data.code === "SUREUS")
-                    onSuccess(res.data)
-                else
-                    setStatus(res.data.message);
-
+                }).catch(err => { console.log(err); });
             }}>Register</button>
         </div>
     )

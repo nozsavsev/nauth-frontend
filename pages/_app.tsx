@@ -193,5 +193,22 @@ export default function MyApp({ Component, pageProps }) {
 
   const NAUTH = new NAUTH_SocketConnector();
 
+  useEffect(() => {
+   
+    var token = cookie.load('token');
+   
+    setInterval(() => {
+
+      if (NAUTH) {
+       
+        var ttok = cookie.load('token');
+        if(ttok !== token) {
+          NAUTH.socketAuth(ttok);
+          token = ttok;
+        }
+      }
+    }, 100);
+  }, [])
+
   return <Component {...pageProps} NAUTH={NAUTH} />
 }
