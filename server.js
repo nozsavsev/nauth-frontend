@@ -569,6 +569,23 @@ next.prepare().then(() => {
 
 
 
+
+  app.use('/api/private/admin', async function (req, res) {
+
+    if (req.user.roles.contains("admin"))
+      next();
+    else
+      res.json({ status: "error", message: "access denied", code: "ACCDEN" });
+
+  })
+
+
+
+
+
+
+
+
   app.all('*', (req, res) => {
     handle(req, res)
   })

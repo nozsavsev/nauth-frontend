@@ -18,6 +18,8 @@
     "express-useragent": "^1.0.15",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.21",
+    "mobx": "^6.5.0",
+    "mobx-react": "^7.3.0",
     "mongodb": "^4.4.1",
     "next": "^12.1.0",
     "qrcode.react": "^2.0.0",

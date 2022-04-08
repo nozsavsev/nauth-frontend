@@ -9,6 +9,11 @@ import QrReader from 'react-qr-scanner'
 import { v4 } from 'uuid';
 import QRCode from 'qrcode.react'
 
+import { NAUTH_SocketConnector, NAUTH_Rest } from './_app'
+
+import { makeAutoObservable } from "mobx"
+import { observer } from "mobx-react"
+
 export function Register({ onSuccess }: { onSuccess: any }) {
 
     const [status, setStatus] = useState('');
@@ -50,15 +55,15 @@ export function Register({ onSuccess }: { onSuccess: any }) {
                 if (password !== passwordOneMoreTime)
                     return setStatus("Passwords don't match");
 
-                var payload = Buffer.from(JSON.stringify({ username: username, email: email, password: password })).toString('base64');;
-                axios.get(`${location.origin}/api/public/registerUserWithEmail?data=${payload}`).then(res => {
 
-                    if (res.data.code === "SUREUS")
-                        onSuccess(res.data)
-                    else
-                        setStatus(res.data.message);
+                var res = await NAUTH_Rest.registerUserWithEmail(username, email, password);
 
-                }).catch(err => { console.log(err); });
+
+                if (res.data.code === "SUREUS")
+                    onSuccess(res.data)
+                else
+                    setStatus(res.data.message);
+
             }}>Register</button>
         </div>
     )
@@ -88,7 +93,25 @@ export function Login({ onSuccess }: { onSuccess: any }) {
             </div>
 
             <input className='flatInput' value={username} placeholder="username or email" onChange={(e) => { setUsername(e.target.value); }} />
-            <input className='flatInput' value={password} placeholder="password" type={"password"} onChange={(e) => { setPassword(e.target.value); }} />
+            <input className='flatInput' value={password} placeholder="password" type={"password"} onChange={(e) => { setPassword(e.target.value); }}
+                onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+
+                        var payload = Buffer.from(JSON.stringify({ username: username, password: password })).toString('base64');;
+                        axios.get(`${location.origin}/api/public/LoginWithPassword?data=${payload}`).then(res => {
+
+                            if (res.data.code === "SLOGIN")
+                                onSuccess(res.data)
+                            else
+                                setStatus(res.data.message);
+
+                            setPassword("");
+
+                        }).catch(err => { console.log(err); });
+
+                    }
+                }}
+            />
 
             <button className='Button' onClick={() => {
                 var payload = Buffer.from(JSON.stringify({ username: username, password: password })).toString('base64');;
@@ -98,6 +121,8 @@ export function Login({ onSuccess }: { onSuccess: any }) {
                         onSuccess(res.data)
                     else
                         setStatus(res.data.message);
+
+                    setPassword("");
 
                 }).catch(err => { console.log(err); });
             }}>Login</button>
@@ -160,9 +185,6 @@ export function SessionManager({ sessions }: any) {
     )
 }
 
-
-
-
 export function ChangePassword({ onSuccess }: { onSuccess: any }) {
 
     const [status, setStatus] = useState('');
@@ -208,6 +230,11 @@ export function ChangePassword({ onSuccess }: { onSuccess: any }) {
                         setStatus(res.data.message);
 
                 }).catch(err => { console.log(err); });
+
+                setPassword('');
+                setOldPassword('');
+                setPasswordOneMoreTime('');
+
             }}>Change</button>
         </div>
     )
@@ -220,35 +247,25 @@ export function ChangePassword({ onSuccess }: { onSuccess: any }) {
 
 
 
-export default function Page({ socket, user, authStatus, setAuthStatus, setUser }) {
+const Page = observer(({ NAUTH }: { NAUTH: NAUTH_SocketConnector }) => {
 
     const router = useRouter()
-    const [location, setLocation] = useState(null);
-    const [qrLoginToken, setQrLoginToken] = useState(v4());
-
-    const [scanned, setScanned] = useState(false);
 
     const [token, __setToken] = useState(cookie.load('token'));
+
     function setToken(token: string) {
         __setToken(token);
         cookie.save("token", token, { path: "/", expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 365) });
     }
 
-    useEffect(() => {
-        setLocation(window.location);
-    }, []);
-
-    if (authStatus === false)
+    if (NAUTH?.getAuthStatus() === false)
         return (
             <div className="Container" style={{ flexDirection: "row", backgroundColor: "white" }}>
                 <Login
                     onSuccess={(data) => {
-                        setAuthStatus(true);
-                        setUser(data.user);
-
                         setToken(data.token);
                         console.log(data);
-                        socket?.emit('auth', { token: data.token });
+                        NAUTH.socketAuth(data.token);
                     }} />
             </div>
         )
@@ -256,17 +273,14 @@ export default function Page({ socket, user, authStatus, setAuthStatus, setUser 
         return (
             <div className="Container" style={{ flexDirection: "column", backgroundColor: "white" }}>
 
-
-
                 <ChangePassword onSuccess={(data) => {
 
                     console.log(data);
 
                 }} />
 
-
-                <SessionManager sessions={user?.sessionStorage} />
-
+                <SessionManager sessions={NAUTH?.getCurrentUser()?.sessionStorage} />
             </div>
         )
-}
+})
+export default Page;
