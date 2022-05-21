@@ -53,7 +53,7 @@ const IndexPage = observer(
             maxWidth: "10em",
           }}>
 
-            <img src="logoBlack.svg" style={{ flex: 0, width: "90%", marginBottom: "10px", objectFit: "contain" }} />
+            <img src="LogoBlack.svg" style={{ flex: 0, width: "90%", marginBottom: "10px", objectFit: "contain" }} />
 
             <div style={{ minHeight: "1em", fontSize: "1em", maxWidth: "15em", wordBreak: "break-word", margin: "0.2em" }}>
               Logging in
@@ -170,7 +170,7 @@ export function Register({ onSuccess, onLogin }: { onSuccess: any, onLogin: any 
     }}>
 
 
-      <img src="logoBlack.svg" style={{ flex: 0, width: "90%", margin: "10px", objectFit: "contain" }} />
+      <img src="LogoBlack.svg" style={{ flex: 0, width: "90%", margin: "10px", objectFit: "contain" }} />
 
 
       <div style={{ minHeight: "1em", fontSize: "0.7em", maxWidth: "15em", wordBreak: "break-word", margin: "0.2em" }}>

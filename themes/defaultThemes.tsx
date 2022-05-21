@@ -11,8 +11,8 @@ export const lightTheme = {
     blue: '#277bdb',
     darkBlue: '#3442ad',
     
-    logo:"/logoBlack.svg",
-    logoTagline:"/logoBlackTagline.svg",
+    logo:"/LogoBlack.svg",
+    logoTagline:"/LogoBlackTagline.svg",
 }
 
 export const darkTheme = {
@@ -28,6 +28,6 @@ export const darkTheme = {
     blue: '#277bdb',
     darkBlue: '#283170',
 
-    logo:"/logoWhite.svg",
-    logoTagline:"/logoWhiteTagline.svg",
+    logo:"/LogoWhite.svg",
+    logoTagline:"/LogoWhiteTagline.svg",
 }
