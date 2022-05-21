@@ -1,8 +1,9 @@
 body {
   font-family: 'Roboto', sans-serif;
+  transition: 0.2s;
 }
 
-.Container {
+.container {
   position: absolute;
   width: 100%;
   height: 100%;
@@ -16,6 +17,24 @@ body {
   background-color: white;
   color: black;
   font-size: 20px;
+  transition: 0.2s;
+  overflow: scroll;
+  box-sizing: border-box;
+}
+
+.center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: 0.2s;
+}
+
+.linkButton {
+  text-decoration: none;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin: 1rem;
+  transition: 0.2s;
 }
 
 ::-webkit-scrollbar {
@@ -39,6 +58,15 @@ body {
   outline: none;
 }
 
+div {
+  transition: 1s;
+}
+
+
+img {
+  transition: 1s;
+}
+
 .Button {
   border: 2px solid black;
   border-radius: 10px;
@@ -53,10 +81,32 @@ body {
 
   transition: color 0.09s, background-color 0.09s;
 }
-
+                
 .Button:active {
   border: 2px solid black;
   color: #000000;
   background-color: #ffffff;
   transition: 0.05s;
+}
+
+.flatButton {
+  border: 2px solid white;
+  border-radius: 10px;
+  color: black;
+  background-color: transparent;
+  font-size: large;
+  padding: 0.5em;
+  margin: 0.5em;
+  outline: none;
+  cursor: pointer;
+  transition: 0.5s;
+
+  transition: color 0.09s, background-color 0.09s;
+}
+
+.flatButton:hover {
+  border: 2px solid black;
+  color: #000000;
+  background-color: #ffffff;
+  transition: 0.5s;
 }

@@ -1,41 +1,38 @@
 {
-  "name": "click",
-  "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "node server.js",
+    "dev": "next",
     "build": "next build",
-    "start": "cross-env NODE_ENV=production node server.js"
+    "start": "next start",
+    "type-check": "tsc"
   },
   "dependencies": {
-    "axios": "^0.26.1",
-    "body-parser": "^1.19.2",
-    "cookie": "^0.4.2",
-    "cookie-parser": "^1.4.6",
-    "cors": "^2.8.5",
-    "cross-env": "^7.0.3",
-    "express": "^4.17.3",
-    "express-useragent": "^1.0.15",
-    "jsonwebtoken": "^8.5.1",
-    "lodash": "^4.17.21",
+    "@babel/core": "^7.17.10",
+    "@babel/plugin-proposal-decorators": "^7.17.9",
+    "@headlessui/react": "^1.6.2",
+    "axios": "^0.27.2",
+    "babel": "^6.23.0",
+    "babel-plugin-transform-typescript-metadata": "^0.3.2",
+    "localforage": "^1.10.0",
+    "lottie-react": "^2.2.1",
     "mobx": "^6.5.0",
+    "mobx-persist": "^0.4.1",
+    "mobx-persist-store": "^1.0.6",
     "mobx-react": "^7.3.0",
-    "mongodb": "^4.4.1",
-    "next": "^12.1.0",
-    "qrcode.react": "^2.0.0",
+    "next": "latest",
     "react": "^17.0.2",
     "react-cookies": "^0.1.1",
     "react-dom": "^17.0.2",
-    "react-qr-code": "^2.0.3",
-    "react-qr-reader": "^3.0.0-beta-1",
+    "react-qr-code": "^2.0.7",
     "react-qr-scanner": "^1.0.0-alpha.8",
-    "socket.io": "^4.4.1",
-    "socket.io-client": "^4.4.1",
-    "user-agent": "^1.0.4",
-    "uuidv4": "^6.2.12"
+    "recoil": "^0.7.3-alpha.2",
+    "socket.io-client": "^4.5.0",
+    "uuidv4": "^6.2.13"
   },
   "devDependencies": {
-    "@types/react": "^17.0.40",
-    "typescript": "^4.6.2"
+    "@types/node": "^12.12.21",
+    "@types/react": "^17.0.2",
+    "@types/react-dom": "^17.0.1",
+    "typescript": "4.0"
   }
 }

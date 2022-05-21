@@ -1,31 +1,47 @@
-const dev = process.env.NODE_ENV !== 'production'
-
-import cookie from 'react-cookies'
-import React, { useState, useEffect } from 'react'
-import { useRouter } from 'next/router';
-import dynamic from "next/dynamic";
-import axios from 'axios';
-import QrReader from 'react-qr-scanner'
-import { v4 } from 'uuid';
-import QRCode from 'qrcode.react'
-
-import { NAUTH_SocketConnector } from './_app'
-
-import { makeAutoObservable } from "mobx"
+import axios from "axios"
 import { observer } from "mobx-react"
+import { useEffect, useState } from "react"
+import { NAUTH_SocketConnector } from "./_app"
 
-export function Register({ onSuccess }: { onSuccess: any }) {
+const dev = process.env.NODE_ENV !== 'production'
+const api = dev ? 'http://localhost:3001' : 'https://nauth-api.nozsa.com';
 
-    const [status, setStatus] = useState('');
 
-    const [username, setUsername] = useState('');
-    const [email, setEmail] = useState('');
+import Lottie from "lottie-react";
+import loading from "../public/lottie/loading.json";
 
-    const [password, setPassword] = useState('');
-    const [passwordOneMoreTime, setPasswordOneMoreTime] = useState('');
+const IndexPage = observer(
 
-    return (
-        <div style={{
+  ({ NAUTH_Socket }: { NAUTH_Socket: NAUTH_SocketConnector }) => {
+
+    const [Login_, setLogin_] = useState(false)
+    const [logingInSocket, setLogingInSocket] = useState(true)
+
+    useEffect(() => {
+
+
+      NAUTH_Socket.authSuccess.addLIstner(user => {
+
+        console.log("success");
+
+        setLogingInSocket(false);
+
+      })
+
+      NAUTH_Socket.authError.addLIstner(() => {
+
+        setLogingInSocket(false);
+
+      })
+
+
+    }, [])
+
+    if (logingInSocket) {
+      return (
+        <div className="container center" style={{ flexDirection: "row" }}>
+
+          <div style={{
             margin: "20px",
             display: "flex",
             flexDirection: "column",
@@ -33,107 +49,41 @@ export function Register({ onSuccess }: { onSuccess: any }) {
             alignItems: "center",
             padding: "1em",
             borderRadius: "0.5em",
-            boxShadow: "0px 0px 20px 1px #ccc"
-        }}>
+            boxShadow: "0px 0px 20px 1px #ccc",
+            maxWidth: "10em",
+          }}>
 
-            <div style={{ minHeight: "1em", fontSize: "0.7em", maxWidth: "15em", wordBreak: "break-word", margin: "0.2em" }}>
-                {status}
+            <img src="logoBlack.svg" style={{ flex: 0, width: "90%", marginBottom: "10px", objectFit: "contain" }} />
+
+            <div style={{ minHeight: "1em", fontSize: "1em", maxWidth: "15em", wordBreak: "break-word", margin: "0.2em" }}>
+              Logging in
             </div>
 
-            <input className='flatInput' value={username} placeholder="username" onChange={(e) => { setUsername(e.target.value); }} />
-            <input className='flatInput' value={email} placeholder="email" onChange={(e) => { setEmail(e.target.value); }} />
-            <input className='flatInput' value={password} placeholder="password" type={"password"} onChange={(e) => { setPassword(e.target.value); }} />
-            <input className='flatInput' value={passwordOneMoreTime} placeholder="one more time" type={"password"} onChange={(e) => { setPasswordOneMoreTime(e.target.value); }} />
+            <Lottie animationData={loading} loop={true} />
 
-            <div style={{ color: "#bbb", fontSize: 14, maxWidth: "17em", marginTop: "1em" }}>
-                I agree to<br />
-                <a style={{ color: "#888", textDecoration: "none" }} target="_blank" href="/legal/tos">Terms of Service</a> and <a style={{ color: "#888", textDecoration: "none" }} target="_blank" href="/legal/prp">Privacy policy</a>
-            </div>
+          </div>
 
-            <button className='Button' onClick={() => {
-
-                if (password !== passwordOneMoreTime)
-                    return setStatus("Passwords don't match");
-
-                var payload = Buffer.from(JSON.stringify({ username: username, email: email, password: password })).toString('base64');;
-                axios.get(`${location.origin}/api/public/registerUserWithEmail?data=${payload}`).then(res => {
-
-                    if (res.data.code === "SUREUS")
-                        onSuccess(res.data)
-                    else
-                        setStatus(res.data.message);
-
-                }).catch(err => { console.log(err); });
-            }}>Register</button>
         </div>
-    )
-}
+      )
+    }
+    else if (!NAUTH_Socket.AuthStatus)
+      return (
+        <div className="container center" style={{ flexDirection: "row" }}>
 
-export function Login({ onSuccess }: { onSuccess: any }) {
+          {
+            Login_ ?
+              <Register onSuccess={(data: any) => { setLogin_(true); }} onLogin={(data: any) => { setLogin_(!Login_) }} />
+              : <Login onSuccess={(data: any) => { setLogingInSocket(true); NAUTH_Socket.socketAuth(data.token) }} onRegister={(data: any) => { setLogin_(!Login_) }} />
+          }
 
-    const [status, setStatus] = useState('');
-
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
-
-    return (
-        <div style={{
-            margin: "20px",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            padding: "1em",
-            borderRadius: "0.5em",
-            boxShadow: "0px 0px 20px 1px #ccc"
-        }}>
-
-            <div style={{ minHeight: "1em", fontSize: "0.7em", maxWidth: "15em", wordBreak: "break-word", margin: "0.2em" }}>
-                {status}
-            </div>
-
-            <input className='flatInput' value={username} placeholder="username or email" onChange={(e) => { setUsername(e.target.value); }} />
-            <input className='flatInput' value={password} placeholder="password" type={"password"} onChange={(e) => { setPassword(e.target.value); }}
-                onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-
-                        var payload = Buffer.from(JSON.stringify({ username: username, password: password })).toString('base64');;
-                        axios.get(`${location.origin}/api/public/LoginWithPassword?data=${payload}`).then(res => {
-
-                            if (res.data.code === "SLOGIN")
-                                onSuccess(res.data)
-                            else
-                                setStatus(res.data.message);
-
-                            setPassword("");
-
-                        }).catch(err => { console.log(err); });
-
-                    }
-                }}
-            />
-
-            <button className='Button' onClick={() => {
-                var payload = Buffer.from(JSON.stringify({ username: username, password: password })).toString('base64');;
-                axios.get(`${location.origin}/api/public/LoginWithPassword?data=${payload}`).then(res => {
-
-                    if (res.data.code === "SLOGIN")
-                        onSuccess(res.data)
-                    else
-                        setStatus(res.data.message);
-
-                    setPassword("");
-
-                }).catch(err => { console.log(err); });
-            }}>Login</button>
         </div>
-    )
-}
+      )
+    else
+      return (
+        <div className="container center" style={{ flexDirection: "row" }}>
 
-export function SessionManager({ sessions }: any) {
 
-    return (
-        <div style={{
+          <div style={{
             margin: "20px",
             width: "350px",
             display: "flex",
@@ -143,144 +93,213 @@ export function SessionManager({ sessions }: any) {
             padding: "1em",
             borderRadius: "0.5em",
             boxShadow: "0px 0px 20px 1px #ccc"
-        }}>
+          }}>
 
             <table>
-                <tbody>
-                    {
-                        sessions?.map((session, index) => {
+              <tbody>
+                {
+                  NAUTH_Socket.CurrentUser.sessions.map((session, index) => {
 
-                            return <tr key={index}>
+                    return <tr key={index}>
 
-                                <td>
-                                    <table style={{ fontWeight: session.current ? "bold" : "normal" }}>
-                                        <tbody>
-                                            <tr>
-                                                <td> {session.useragent.os} |</td>
-                                                <td> {session.useragent.browser} </td>
-                                            </tr>
-                                            <tr>
-                                                <td colSpan={3} style={{ fontSize: "0.5em", color: "#888" }}>{session.sessionID}</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </td>
-
-                                <td> <button className='Button' style={{ fontSize: "15px", }} onClick={() => {
-
-                                    var payload = Buffer.from(JSON.stringify({ sessionID: session.sessionID })).toString('base64');;
-
-                                    axios.get(`${location.origin}/api/private/revokeSession?data=${payload}`).then(res => {
-                                        console.log(res.data);
-                                    }).catch(err => { console.log(err); });
-
-                                }}>Logout</button></td>
+                      <td>
+                        <table style={{ fontWeight: session.current ? "bold" : "normal" }}>
+                          <tbody>
+                            <tr>
+                              <td> {session.os} |</td>
+                              <td> {session.device} </td>
                             </tr>
-                        })
-                    }
-                </tbody>
+                            <tr>
+                              <td colSpan={3} style={{ fontSize: "0.5em", color: "#888" }}>{session.id}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+
+                      <td> <button className='Button' style={{ fontSize: "15px", }} onClick={() => {
+
+                        axios.get(`${api}/private/revokeSession?sessionID=${session.id}&token=${NAUTH_Socket.token}`).then(res => {
+                          console.log(res.data);
+                        }).catch(err => { console.log(err); });
+
+                      }}>{ session.current ?  "Logout" : "Revoke"}</button></td>
+                    </tr>
+                  })
+                }
+              </tbody>
             </table>
 
+          </div>
+
+
+
         </div>
-    )
+      )
+  }
+
+)
+
+export default IndexPage
+
+
+
+export function Register({ onSuccess, onLogin }: { onSuccess: any, onLogin: any }) {
+
+  const [status, setStatus] = useState('');
+
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+
+  const [password, setPassword] = useState('');
+  const [passwordOneMoreTime, setPasswordOneMoreTime] = useState('');
+
+  const [finished, setFinished] = useState(false);
+
+  return (
+    <div style={{
+      margin: "10px",
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: "1em",
+      paddingTop: "0",
+      borderRadius: "0.5em",
+      boxShadow: "0px 0px 20px 1px #ccc",
+      maxWidth: "10em",
+    }}>
+
+
+      <img src="logoBlack.svg" style={{ flex: 0, width: "90%", margin: "10px", objectFit: "contain" }} />
+
+
+      <div style={{ minHeight: "1em", fontSize: "0.7em", maxWidth: "15em", wordBreak: "break-word", margin: "0.2em" }}>
+        {status}
+      </div>
+
+      <input className='flatInput' value={username} placeholder="username" onChange={(e) => { setStatus(''); setUsername(e.target.value); }} />
+      <input className='flatInput' value={email} placeholder="email" onChange={(e) => { setStatus(''); setEmail(e.target.value); }} />
+      <input className='flatInput' value={password} placeholder="password" type={"password"} onChange={(e) => { setStatus(''); setPassword(e.target.value); }} />
+      <input className='flatInput' value={passwordOneMoreTime} placeholder="one more time" type={"password"} onChange={(e) => { setStatus(''); setPasswordOneMoreTime(e.target.value); }} />
+
+      <div style={{ color: "#bbb", fontSize: 14, maxWidth: "17em", marginTop: "1em" }}>
+        I agree to<br />
+        <a style={{ color: "#888", textDecoration: "none" }} target="_blank" href="/legal/tos">Terms of Service</a> and <a style={{ color: "#888", textDecoration: "none" }} target="_blank" href="/legal/prp">Privacy policy</a>
+      </div>
+
+      <button className='Button' style={{ width: "100%" }} onClick={() => {
+        setStatus('');
+        if (password !== passwordOneMoreTime)
+          return setStatus("Passwords don't match");
+
+        axios.get(`${api}/register?email=${email}&username=${username}&password=${password}`).then(res => {
+
+
+          if (res.data.status === "success") {
+
+            setEmail("");
+            setUsername("");
+            setPassword("");
+            setPasswordOneMoreTime("");
+
+            onSuccess(res.data);
+
+          } else {
+
+            setStatus(res.data.error);
+
+          }
+
+
+        }).catch(err => { console.log(err); });
+
+
+      }}>Register</button>
+
+      <button className='flatButton' style={{ flex: 1, width: "100%" }} onClick={() => {
+        onLogin();
+      }}>Login</button>
+
+    </div>
+
+  )
 }
 
-export function ChangePassword({ onSuccess }: { onSuccess: any }) {
+export function Login({ onSuccess, onRegister }: { onSuccess: any, onRegister: any }) {
 
-    const [status, setStatus] = useState('');
+  const [status, setStatus] = useState('');
 
-    const [oldPassword, setOldPassword] = useState('');
-    const [password, setPassword] = useState('');
-    const [passwordOneMoreTime, setPasswordOneMoreTime] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
 
-    return (
-        <div style={{
-            margin: "20px",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            padding: "1em",
-            borderRadius: "0.5em",
-            boxShadow: "0px 0px 20px 1px #ccc"
-        }}>
+  return (
+    <div style={{
+      margin: "20px",
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: "1em",
+      borderRadius: "0.5em",
+      boxShadow: "0px 0px 20px 1px #ccc",
+      maxWidth: "10em",
+    }}>
 
-            <div style={{ minHeight: "1em", fontSize: "0.7em", maxWidth: "15em", wordBreak: "break-word", margin: "0.2em" }}>
-                {status}
-            </div>
+      <img src="logoBlack.svg" style={{ flex: 0, width: "90%", marginBottom: "10px", objectFit: "contain" }} />
 
 
 
-            <input className='flatInput' value={oldPassword} placeholder="current password" type={"password"} onChange={(e) => { setOldPassword(e.target.value); }} />
+      <div style={{ minHeight: "1em", fontSize: "0.7em", maxWidth: "15em", wordBreak: "break-word", margin: "0.2em" }}>
+        {status}
+      </div>
 
-            <input className='flatInput' value={password} placeholder="password" type={"password"} onChange={(e) => { setPassword(e.target.value); }} />
-            <input className='flatInput' value={passwordOneMoreTime} placeholder="one more time" type={"password"} onChange={(e) => { setPasswordOneMoreTime(e.target.value); }} />
+      <input className='flatInput' value={username} placeholder="username or email" onChange={(e) => { setStatus(''); setUsername(e.target.value); }} />
+      <input className='flatInput' value={password} placeholder="password" type={"password"} onChange={(e) => { setPassword(e.target.value); }}
+        onKeyDown={(e) => {
 
-            <button className='Button' onClick={() => {
 
-                if (password !== passwordOneMoreTime)
-                    return setStatus("Passwords don't match");
+          setStatus('');
 
-                var payload = Buffer.from(JSON.stringify({ newPassword: password, password: oldPassword })).toString('base64');;
-                axios.get(`${location.origin}/api/private/changePassword?data=${payload}`).then(res => {
+          if (e.key === "Enter") {
 
-                    if (res.data.code === "PASSCH")
-                        onSuccess(res.data)
-                    else
-                        setStatus(res.data.message);
+            axios.get(`${api}/Login?username=${username}&password=${password}`).then(res => {
 
-                }).catch(err => { console.log(err); });
+              if (res.data.status === "success")
+                onSuccess(res.data)
+              else
+                setStatus(res.data.error);
 
-                setPassword('');
-                setOldPassword('');
-                setPasswordOneMoreTime('');
+              setPassword("");
+            }).catch(err => { console.log(err); });
 
-            }}>Change</button>
-        </div>
-    )
+          }
+        }}
+      />
+
+      <button className='Button' style={{ flex: 1, width: "100%" }} onClick={() => {
+
+        var payload = Buffer.from(JSON.stringify({ username: username, password: password })).toString('base64');;
+        axios.get(`${api}/Login?username=${username}&password=${password}`).then(res => {
+
+          setStatus('');
+
+          if (res.data.status === "success")
+            onSuccess(res.data)
+          else
+            setStatus(res.data.error);
+
+          setPassword("");
+        }).catch(err => { console.log(err); });
+      }}>Login</button>
+
+
+
+      <button className='flatButton' style={{ flex: 1, width: "100%" }} onClick={() => {
+        onRegister();
+      }}>Register</button>
+
+
+
+    </div>
+  )
 }
-
-
-
-
-
-
-
-
-const Page = observer(({ NAUTH }: { NAUTH: NAUTH_SocketConnector }) => {
-
-    const router = useRouter()
-
-    const [token, __setToken] = useState(cookie.load('token'));
-
-    function setToken(token: string) {
-        __setToken(token);
-        cookie.save("token", token, { path: "/", expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 365) });
-    }
-
-    if (NAUTH?.getAuthStatus() === false)
-        return (
-            <div className="Container" style={{ flexDirection: "row", backgroundColor: "white" }}>
-                <Login
-                    onSuccess={(data) => {
-                        setToken(data.token);
-                        console.log(data);
-                        NAUTH.socketAuth(data.token);
-                    }} />
-            </div>
-        )
-    else
-        return (
-            <div className="Container" style={{ flexDirection: "column", backgroundColor: "white" }}>
-
-                <ChangePassword onSuccess={(data) => {
-
-                    console.log(data);
-
-                }} />
-
-                <SessionManager sessions={NAUTH?.getCurrentUser()?.sessionStorage} />
-            </div>
-        )
-})
-export default Page;
