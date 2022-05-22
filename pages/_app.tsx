@@ -3,7 +3,6 @@ import './global.css'
 import socketIOClient, { Socket } from "socket.io-client";
 import React, { useState, useEffect } from 'react'
 import axios from 'axios';
-import cookie from 'react-cookies'
 
 const dev = process.env.NODE_ENV !== 'production'
 
@@ -53,8 +52,14 @@ export default function MyApp({ Component, pageProps }) {
 
     useEffect(() => {
 
-
         NAUTH_Socket.initialize_connection();
+
+        setTimeout(() => {
+
+            if (!NAUTH_Socket.AuthStatus)
+                NAUTH_Socket.socketAuth(null);
+
+        }, 1000)
 
     }, [])
 
@@ -140,7 +145,10 @@ export class NAUTH_SocketConnector {
 
     //public actions
     public socketAuth(token: string) {
-        this.token = token;
+
+        if (token)
+            this.token = token;
+
         this.authSocket?.emit('auth', { token: token });
     }
 
@@ -154,7 +162,7 @@ export class NAUTH_SocketConnector {
         this.sessionRevoked = new event<void, (void)>();
 
         if (typeof window !== "undefined") {
-            makePersistable(this, { name: 'VisualStore', properties: ['token'], storage: localStorage });
+            makePersistable(this, { name: 'NAUTH_Store', properties: ['token'], storage: localStorage });
         }
 
     }
@@ -231,6 +239,10 @@ export class NAUTH_SocketConnector {
         this.authStatus = true;
         this.user = data.user;
         this.session = this.user.sessions.find(s => s.id === data.sessionID);
+
+        console.log({ ...this.user });
+        console.log({ ...this.session });
+
         this.session.current = true;
 
         this.authSuccess.emit(data.user);

@@ -245,7 +245,7 @@ export function Login({ onSuccess, onRegister }: { onSuccess: any, onRegister: a
       maxWidth: "10em",
     }}>
 
-      <img src="logoBlack.svg" style={{ flex: 0, width: "90%", marginBottom: "10px", objectFit: "contain" }} />
+      <img src="LogoBlack.svg" style={{ flex: 0, width: "90%", marginBottom: "10px", objectFit: "contain" }} />
 
 
 
