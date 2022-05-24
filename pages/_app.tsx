@@ -54,7 +54,7 @@ export default function MyApp({ Component, pageProps }) {
 
         NAUTH_Socket.initialize_connection();
 
-        setTimeout(() => {
+        setInterval(() => {
 
             if (!NAUTH_Socket.AuthStatus)
                 NAUTH_Socket.socketAuth(null);

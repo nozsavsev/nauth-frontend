@@ -19,7 +19,6 @@ const IndexPage = observer(
 
     useEffect(() => {
 
-
       NAUTH_Socket.authSuccess.addLIstner(user => {
 
         console.log("success");
@@ -72,7 +71,7 @@ const IndexPage = observer(
 
           {
             Login_ ?
-              <Register onSuccess={(data: any) => { setLogin_(true); }} onLogin={(data: any) => { setLogin_(!Login_) }} />
+              <Register onSuccess={() => { setLogin_(false); }} onLogin={(data: any) => { setLogin_(!Login_) }} />
               : <Login onSuccess={(data: any) => { setLogingInSocket(true); NAUTH_Socket.socketAuth(data.token) }} onRegister={(data: any) => { setLogin_(!Login_) }} />
           }
 
@@ -122,7 +121,7 @@ const IndexPage = observer(
                           console.log(res.data);
                         }).catch(err => { console.log(err); });
 
-                      }}>{ session.current ?  "Logout" : "Revoke"}</button></td>
+                      }}>{session.current ? "Logout" : "Revoke"}</button></td>
                     </tr>
                   })
                 }
