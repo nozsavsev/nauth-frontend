@@ -54,13 +54,6 @@ export default function MyApp({ Component, pageProps }) {
 
         NAUTH_Socket.initialize_connection();
 
-        setInterval(() => {
-
-            if (!NAUTH_Socket.AuthStatus)
-                NAUTH_Socket.socketAuth(null);
-
-        }, 1000)
-
     }, [])
 
 
@@ -129,12 +122,15 @@ export class NAUTH_SocketConnector {
     private user: nauth.client.user = null;
     private session: nauth.client.session = null;
     private authStatus: boolean = false;
-    public token = null;
+    public status_working: boolean = false;
+    public type_working: "emailVeref" | "restoringSession" = "restoringSession";
+    public token: string = null;
 
     //public state getters
     public get CurrentUser(): nauth.client.user { return this.user; }
     public get CurrentSession(): nauth.client.session { return this.session; }
     public get AuthStatus(): boolean { return this.authStatus; }
+
 
     //user events
     public authSuccess: event<void, (nauth.client.user)>
@@ -149,7 +145,10 @@ export class NAUTH_SocketConnector {
         if (token)
             this.token = token;
 
-        this.authSocket?.emit('auth', { token: token });
+        this.status_working = true;
+        this.type_working = "restoringSession";
+
+        this.authSocket?.emit('auth', { token: this.token });
     }
 
     constructor() {
@@ -162,7 +161,7 @@ export class NAUTH_SocketConnector {
         this.sessionRevoked = new event<void, (void)>();
 
         if (typeof window !== "undefined") {
-            makePersistable(this, { name: 'NAUTH_Store', properties: ['token'], storage: localStorage });
+            makePersistable(this, { name: 'NAUTH_Credentials_Store', properties: ['token'], storage: localStorage });
         }
 
     }
@@ -212,10 +211,12 @@ export class NAUTH_SocketConnector {
             this.authSocket.on('sessionExpired', this.on_sessionExpired.bind(this));
             this.authSocket.on('newSession', this.on_newSession.bind(this));
             this.authSocket.on('sessionRevoked', this.on_sessionRevoked.bind(this));
+            this.authSocket.on('emailVerification', this.on_emailVerification.bind(this));
+            this.authSocket.on('emailVerified', this.on_emailVerified.bind(this));
 
             console.log('auth');
 
-            this.authSocket.emit('auth', { token: this.token });
+            this.socketAuth(null);
         }
     }
 
@@ -236,25 +237,25 @@ export class NAUTH_SocketConnector {
 
     private on_authSuccess(data: { user: nauth.client.user, sessionID: string }) {
 
+        this.status_working = false;
+
         this.authStatus = true;
         this.user = data.user;
         this.session = this.user.sessions.find(s => s.id === data.sessionID);
 
-        console.log({ ...this.user });
-        console.log({ ...this.session });
-
-        this.session.current = true;
+        if (this.session)
+            this.session.current = true;
 
         this.authSuccess.emit(data.user);
     }
 
     private on_authError() {
+
+        this.status_working = false;
         this.authStatus = false;
         this.user = null;
         this.session = null;
         this.authError.emit();
-
-
     }
 
     private on_sessionExpired(data: { sessionID: string }) {
@@ -273,4 +274,19 @@ export class NAUTH_SocketConnector {
         this.sessionRevoked.emit();
         this.authSocket.disconnect();
     }
+
+    private on_emailVerification(data: { user: nauth.client.user }) {
+        this.user = data.user;
+        this.authStatus = false;
+
+        this.status_working = true;
+        this.type_working = "emailVeref";
+    }
+
+    private on_emailVerified() {
+        this.status_working = false;
+        this.socketAuth(null);
+    }
+
+
 }

@@ -9,34 +9,22 @@ const api = dev ? 'http://localhost:3001' : 'https://nauth-api.nozsa.com';
 
 import Lottie from "lottie-react";
 import loading from "../public/lottie/loading.json";
+import email from "../public/lottie/email.json";
 
 const IndexPage = observer(
 
   ({ NAUTH_Socket }: { NAUTH_Socket: NAUTH_SocketConnector }) => {
 
     const [Login_, setLogin_] = useState(false)
-    const [logingInSocket, setLogingInSocket] = useState(true)
 
     useEffect(() => {
 
-      NAUTH_Socket.authSuccess.addLIstner(user => {
-
-        console.log("success");
-
-        setLogingInSocket(false);
-
-      })
-
-      NAUTH_Socket.authError.addLIstner(() => {
-
-        setLogingInSocket(false);
-
-      })
 
 
     }, [])
 
-    if (logingInSocket) {
+    if (NAUTH_Socket.status_working) {
+
       return (
         <div className="container center" style={{ flexDirection: "row" }}>
 
@@ -54,11 +42,17 @@ const IndexPage = observer(
 
             <img src="LogoBlack.svg" style={{ flex: 0, width: "90%", marginBottom: "10px", objectFit: "contain" }} />
 
-            <div style={{ minHeight: "1em", fontSize: "1em", maxWidth: "15em", wordBreak: "break-word", margin: "0.2em" }}>
-              Logging in
+            <div style={{ minHeight: "1em", fontSize: "1em", maxWidth: "15em", wordBreak: "break-word", textAlign: "center", margin: "0.2em" }}>
+              {
+                (NAUTH_Socket.type_working === "emailVeref") ? "Email verification for\n" + NAUTH_Socket?.CurrentUser?.email :
+                  (NAUTH_Socket.type_working === "restoringSession") ? "Logging in" : ""
+              }
             </div>
 
-            <Lottie animationData={loading} loop={true} />
+            {
+              (NAUTH_Socket.type_working === "emailVeref") ? <Lottie animationData={email} loop={true} /> :
+                (NAUTH_Socket.type_working === "restoringSession") ? <Lottie animationData={loading} loop={true} /> : ""
+            }
 
           </div>
 
@@ -72,7 +66,7 @@ const IndexPage = observer(
           {
             Login_ ?
               <Register onSuccess={() => { setLogin_(false); }} onLogin={(data: any) => { setLogin_(!Login_) }} />
-              : <Login onSuccess={(data: any) => { setLogingInSocket(true); NAUTH_Socket.socketAuth(data.token) }} onRegister={(data: any) => { setLogin_(!Login_) }} />
+              : <Login onSuccess={(data: any) => { NAUTH_Socket.socketAuth(data.token) }} onRegister={(data: any) => { setLogin_(!Login_) }} />
           }
 
         </div>
@@ -127,11 +121,7 @@ const IndexPage = observer(
                 }
               </tbody>
             </table>
-
           </div>
-
-
-
         </div>
       )
   }
@@ -142,7 +132,7 @@ export default IndexPage
 
 
 
-export function Register({ onSuccess, onLogin }: { onSuccess: any, onLogin: any }) {
+export const Register = observer(({ onSuccess, onLogin }: { onSuccess: any, onLogin: any }) => {
 
   const [status, setStatus] = useState('');
 
@@ -222,9 +212,9 @@ export function Register({ onSuccess, onLogin }: { onSuccess: any, onLogin: any 
     </div>
 
   )
-}
+})
 
-export function Login({ onSuccess, onRegister }: { onSuccess: any, onRegister: any }) {
+export const Login = observer(({ onSuccess, onRegister }: { onSuccess: any, onRegister: any }) => {
 
   const [status, setStatus] = useState('');
 
@@ -301,4 +291,4 @@ export function Login({ onSuccess, onRegister }: { onSuccess: any, onRegister: a
 
     </div>
   )
-}
+})
