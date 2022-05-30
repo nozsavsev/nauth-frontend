@@ -10,6 +10,7 @@ const api = dev ? 'http://localhost:3001' : 'https://nauth-api.nozsa.com';
 import Lottie from "lottie-react";
 import loading from "../public/lottie/loading.json";
 import email from "../public/lottie/email.json";
+import deleted from "../public/lottie/deleted.json";
 
 const IndexPage = observer(
 
@@ -17,11 +18,49 @@ const IndexPage = observer(
 
     const [Login_, setLogin_] = useState(false)
 
+    const [userDeleted, setUserDeleted] = useState(false)
+    const [password, setPassword] = useState('')
+
     useEffect(() => {
-
-
-
+      NAUTH_Socket.userDeleted.addLIstner(() => {
+        setUserDeleted(true);
+      })
     }, [])
+
+
+    if (userDeleted) {
+      return (
+        <div className="container center" style={{ flexDirection: "row" }}>
+
+          <div style={{
+            margin: "20px",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: "1em",
+            borderRadius: "0.5em",
+            boxShadow: "0px 0px 20px 1px #ccc",
+            maxWidth: "10em",
+          }}>
+
+            <img src="/LogoBlack.svg" style={{ flex: 0, width: "90%", marginBottom: "10px", objectFit: "contain" }} />
+
+            <div style={{ minHeight: "1em", fontSize: "1em", maxWidth: "15em", wordBreak: "break-word", margin: "0.2em" }}>
+              Account deleted
+            </div>
+
+
+
+            <Lottie animationData={deleted} loop={false} />
+
+          </div>
+
+        </div>
+
+      )
+    }
+
 
     if (NAUTH_Socket.status_working) {
 
@@ -73,7 +112,16 @@ const IndexPage = observer(
       )
     else
       return (
-        <div className="container center" style={{ flexDirection: "row" }}>
+        <div className="container center" style={{ flexDirection: "column" }}>
+
+          <input className='flatInput' value={password} placeholder="password" type={"password"} onChange={(e) => { setPassword(e.target.value); }} />
+          <button className='Button' style={{ fontSize: "15px", background: "red", fontWeight: "bold", border: "solid red" }} onClick={() => {
+
+            axios.get(`${api}/private/deleteUser?password=${password}&token=${NAUTH_Socket.token}`).then(res => {
+              console.log(res.data);
+            }).catch(err => { console.log(err); });
+
+          }}>{"Delete user"}</button>
 
 
           <div style={{
@@ -87,7 +135,6 @@ const IndexPage = observer(
             borderRadius: "0.5em",
             boxShadow: "0px 0px 20px 1px #ccc"
           }}>
-
             <table>
               <tbody>
                 {

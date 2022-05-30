@@ -18,11 +18,6 @@ function BiSun(props) {
 
 
 
-
-
-
-
-
 import { makeAutoObservable } from "mobx";
 import { makePersistable } from 'mobx-persist-store';
 import Head from 'next/head';
@@ -138,6 +133,7 @@ export class NAUTH_SocketConnector {
     public newSession: event<void, (nauth.client.session)>
     public authError: event<void, (void)>
     public sessionRevoked: event<void, (void)>
+    public userDeleted: event<void, (void)>
 
     //public actions
     public socketAuth(token: string) {
@@ -159,6 +155,7 @@ export class NAUTH_SocketConnector {
         this.newSession = new event<void, (nauth.client.session)>();
         this.authError = new event<void, (void)>();
         this.sessionRevoked = new event<void, (void)>();
+        this.userDeleted = new event<void, (void)>();
 
         if (typeof window !== "undefined") {
             makePersistable(this, { name: 'NAUTH_Credentials_Store', properties: ['token'], storage: localStorage });
@@ -178,6 +175,7 @@ export class NAUTH_SocketConnector {
         this.sessionExpired.clearListeners();
         this.newSession.clearListeners();
         this.sessionRevoked.clearListeners();
+        this.userDeleted.clearListeners();
     }
 
     //socket events
@@ -213,6 +211,7 @@ export class NAUTH_SocketConnector {
             this.authSocket.on('sessionRevoked', this.on_sessionRevoked.bind(this));
             this.authSocket.on('emailVerification', this.on_emailVerification.bind(this));
             this.authSocket.on('emailVerified', this.on_emailVerified.bind(this));
+            this.authSocket.on('userDeleted', this.on_userDeleted.bind(this));
 
             console.log('auth');
 
@@ -245,6 +244,8 @@ export class NAUTH_SocketConnector {
 
         if (this.session)
             this.session.current = true;
+
+        console.log({ ...data.user });
 
         this.authSuccess.emit(data.user);
     }
@@ -286,6 +287,19 @@ export class NAUTH_SocketConnector {
     private on_emailVerified() {
         this.status_working = false;
         this.socketAuth(null);
+    }
+
+    private on_userDeleted() {
+
+        this.status_working = false;
+        this.authStatus = false;
+        this.user = null;
+        this.session = null;
+        this.token = null;
+        
+        console.log("user deleted");
+
+        this.userDeleted.emit();
     }
 
 
