@@ -1,10 +1,9 @@
 import axios from "axios"
 import { observer } from "mobx-react"
 import { useEffect, useState } from "react"
-import { NAUTH_SocketConnector } from "../_app"
+import { NAUTH_Connector } from "../_app"
 
 const dev = process.env.NODE_ENV !== 'production'
-const api = dev ? 'http://localhost:3001' : 'https://nauth-api.nozsa.com';
 
 
 import Lottie from "lottie-react";
@@ -14,33 +13,21 @@ import error from "../../public/lottie/error.json";
 
 const IndexPage = observer(
 
-  ({ NAUTH_Socket }: { NAUTH_Socket: NAUTH_SocketConnector }) => {
+  ({ NAUTH }: { NAUTH: NAUTH_Connector }) => {
 
     const [status, setStatus] = useState("Verifing email")
 
     useEffect(() => {
-
       const token = window.location.href.split("?token=")[1]
-      console.log(token)
-
-      axios.get(`${api}/verifyEmail?token=${token}`).then(res => {
-        
-        console.log(res.data)
-
-        if (res.data.status === 'success') {
-
+      NAUTH.REST_verifyEmail(token).then(res => {
+        if (res.status === 'success') {
 
           setStatus("Email verified")
         }
         else {
           setStatus("Error")
         }
-
-      }).catch(err => {
-        setStatus("Error")
-      })
-
-
+      });
     }, [])
 
 

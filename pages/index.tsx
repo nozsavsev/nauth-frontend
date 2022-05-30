@@ -1,7 +1,7 @@
 import axios from "axios"
 import { observer } from "mobx-react"
 import { useEffect, useState } from "react"
-import { NAUTH_SocketConnector } from "./_app"
+import { NAUTH_Connector } from "./_app"
 
 const dev = process.env.NODE_ENV !== 'production'
 const api = dev ? 'http://localhost:3001' : 'https://nauth-api.nozsa.com';
@@ -14,7 +14,7 @@ import deleted from "../public/lottie/deleted.json";
 
 const IndexPage = observer(
 
-  ({ NAUTH_Socket }: { NAUTH_Socket: NAUTH_SocketConnector }) => {
+  ({ NAUTH }: { NAUTH: NAUTH_Connector }) => {
 
     const [Login_, setLogin_] = useState(false)
 
@@ -22,7 +22,7 @@ const IndexPage = observer(
     const [password, setPassword] = useState('')
 
     useEffect(() => {
-      NAUTH_Socket.userDeleted.addLIstner(() => {
+      NAUTH.userDeleted.addLIstner(() => {
         setUserDeleted(true);
       })
     }, [])
@@ -62,7 +62,7 @@ const IndexPage = observer(
     }
 
 
-    if (NAUTH_Socket.status_working) {
+    if (NAUTH?.wStatus) {
 
       return (
         <div className="container center" style={{ flexDirection: "row" }}>
@@ -83,14 +83,14 @@ const IndexPage = observer(
 
             <div style={{ minHeight: "1em", fontSize: "1em", maxWidth: "15em", wordBreak: "break-word", textAlign: "center", margin: "0.2em" }}>
               {
-                (NAUTH_Socket.type_working === "emailVeref") ? "Email verification for\n" + NAUTH_Socket?.CurrentUser?.email :
-                  (NAUTH_Socket.type_working === "restoringSession") ? "Logging in" : ""
+                (NAUTH.wType === "emailVeref") ? "Email verification for\n" + NAUTH?.CurrentUser?.email :
+                  (NAUTH.wType === "restoringSession") ? "Logging in" : ""
               }
             </div>
 
             {
-              (NAUTH_Socket.type_working === "emailVeref") ? <Lottie animationData={email} loop={true} /> :
-                (NAUTH_Socket.type_working === "restoringSession") ? <Lottie animationData={loading} loop={true} /> : ""
+              (NAUTH.wType === "emailVeref") ? <Lottie animationData={email} loop={true} /> :
+                (NAUTH.wType === "restoringSession") ? <Lottie animationData={loading} loop={true} /> : ""
             }
 
           </div>
@@ -98,14 +98,14 @@ const IndexPage = observer(
         </div>
       )
     }
-    else if (!NAUTH_Socket.AuthStatus)
+    else if (!NAUTH?.AuthStatus)
       return (
         <div className="container center" style={{ flexDirection: "row" }}>
 
           {
             Login_ ?
-              <Register onSuccess={() => { setLogin_(false); }} onLogin={(data: any) => { setLogin_(!Login_) }} />
-              : <Login onSuccess={(data: any) => { NAUTH_Socket.socketAuth(data.token) }} onRegister={(data: any) => { setLogin_(!Login_) }} />
+              <Register NAUTH={NAUTH} onLogin={(data: any) => { setLogin_(!Login_) }} />
+              : <Login NAUTH={NAUTH} onRegister={(data: any) => { setLogin_(!Login_) }} />
           }
 
         </div>
@@ -117,9 +117,7 @@ const IndexPage = observer(
           <input className='flatInput' value={password} placeholder="password" type={"password"} onChange={(e) => { setPassword(e.target.value); }} />
           <button className='Button' style={{ fontSize: "15px", background: "red", fontWeight: "bold", border: "solid red" }} onClick={() => {
 
-            axios.get(`${api}/private/deleteUser?password=${password}&token=${NAUTH_Socket.token}`).then(res => {
-              console.log(res.data);
-            }).catch(err => { console.log(err); });
+            NAUTH.REST_DeleteUser(password);
 
           }}>{"Delete user"}</button>
 
@@ -138,7 +136,7 @@ const IndexPage = observer(
             <table>
               <tbody>
                 {
-                  NAUTH_Socket.CurrentUser.sessions.map((session, index) => {
+                  NAUTH.CurrentUser.sessions.map((session, index) => {
 
                     return <tr key={index}>
 
@@ -158,9 +156,8 @@ const IndexPage = observer(
 
                       <td> <button className='Button' style={{ fontSize: "15px", }} onClick={() => {
 
-                        axios.get(`${api}/private/revokeSession?sessionID=${session.id}&token=${NAUTH_Socket.token}`).then(res => {
-                          console.log(res.data);
-                        }).catch(err => { console.log(err); });
+                        NAUTH.REST_RevokeSession(session.id);
+
 
                       }}>{session.current ? "Logout" : "Revoke"}</button></td>
                     </tr>
@@ -179,7 +176,7 @@ export default IndexPage
 
 
 
-export const Register = observer(({ onSuccess, onLogin }: { onSuccess: any, onLogin: any }) => {
+export const Register = observer(({ onSuccess, onLogin, NAUTH }: { onSuccess?: any, onLogin: any, NAUTH: NAUTH_Connector }) => {
 
   const [status, setStatus] = useState('');
 
@@ -223,32 +220,23 @@ export const Register = observer(({ onSuccess, onLogin }: { onSuccess: any, onLo
         <a style={{ color: "#888", textDecoration: "none" }} target="_blank" href="/legal/tos">Terms of Service</a> and <a style={{ color: "#888", textDecoration: "none" }} target="_blank" href="/legal/prp">Privacy policy</a>
       </div>
 
-      <button className='Button' style={{ width: "100%" }} onClick={() => {
+      <button className='Button' style={{ width: "100%" }} onClick={async () => {
+
         setStatus('');
+
         if (password !== passwordOneMoreTime)
           return setStatus("Passwords don't match");
 
-        axios.get(`${api}/register?email=${email}&username=${username}&password=${password}`).then(res => {
+        let res = await NAUTH.REST_createUser(username, email, password);
 
-
-          if (res.data.status === "success") {
-
-            setEmail("");
-            setUsername("");
-            setPassword("");
-            setPasswordOneMoreTime("");
-
-            onSuccess(res.data);
-
-          } else {
-
-            setStatus(res.data.error);
-
-          }
-
-
-        }).catch(err => { console.log(err); });
-
+        if (res.status === "success") {
+          setPassword('');
+          setPasswordOneMoreTime('');
+          if (onSuccess)
+            onSuccess(res);
+        }
+        else
+          setStatus(res.error);
 
       }}>Register</button>
 
@@ -261,7 +249,7 @@ export const Register = observer(({ onSuccess, onLogin }: { onSuccess: any, onLo
   )
 })
 
-export const Login = observer(({ onSuccess, onRegister }: { onSuccess: any, onRegister: any }) => {
+export const Login = observer(({ onSuccess, onRegister, NAUTH }: { onSuccess?: any, onRegister: any, NAUTH: NAUTH_Connector }) => {
 
   const [status, setStatus] = useState('');
 
@@ -291,41 +279,37 @@ export const Login = observer(({ onSuccess, onRegister }: { onSuccess: any, onRe
 
       <input className='flatInput' value={username} placeholder="username or email" onChange={(e) => { setStatus(''); setUsername(e.target.value); }} />
       <input className='flatInput' value={password} placeholder="password" type={"password"} onChange={(e) => { setPassword(e.target.value); }}
-        onKeyDown={(e) => {
-
-
+        onKeyDown={async (e) => {
           setStatus('');
 
           if (e.key === "Enter") {
 
-            axios.get(`${api}/Login?username=${username}&password=${password}`).then(res => {
+            let res = await NAUTH.REST_Login(username, password);
 
-              if (res.data.status === "success")
-                onSuccess(res.data)
-              else
-                setStatus(res.data.error);
-
+            if (res.status === "success") {
+              setStatus('');
               setPassword("");
-            }).catch(err => { console.log(err); });
-
+              onSuccess(res);
+            }
+            else
+              setStatus(res.error);
           }
         }}
       />
 
-      <button className='Button' style={{ flex: 1, width: "100%" }} onClick={() => {
+      <button className='Button' style={{ flex: 1, width: "100%" }} onClick={async () => {
 
-        var payload = Buffer.from(JSON.stringify({ username: username, password: password })).toString('base64');;
-        axios.get(`${api}/Login?username=${username}&password=${password}`).then(res => {
+        let res = await NAUTH.REST_Login(username, password);
 
+        if (res.status === "success") {
           setStatus('');
-
-          if (res.data.status === "success")
-            onSuccess(res.data)
-          else
-            setStatus(res.data.error);
-
           setPassword("");
-        }).catch(err => { console.log(err); });
+          if (onSuccess)
+            onSuccess(res);
+        }
+        else
+          setStatus(res.error);
+
       }}>Login</button>
 
 

@@ -6,8 +6,6 @@ import axios from 'axios';
 
 const dev = process.env.NODE_ENV !== 'production'
 
-const api = dev ? 'http://localhost:3001' : 'https://nauth-api.nozsa.com';
-
 function BiMoon(props) {
     return <svg stroke="currentColor" fill="currentColor" strokeWidth={0} viewBox="0 0 24 24" height="1.5em" width="1.5em" {...props}><path d="M20.742,13.045c-0.677,0.18-1.376,0.271-2.077,0.271c-2.135,0-4.14-0.83-5.646-2.336c-2.008-2.008-2.799-4.967-2.064-7.723 c0.092-0.345-0.007-0.713-0.259-0.965C10.444,2.04,10.077,1.938,9.73,2.034C8.028,2.489,6.476,3.382,5.241,4.616 c-3.898,3.898-3.898,10.243,0,14.143c1.889,1.889,4.401,2.93,7.072,2.93c2.671,0,5.182-1.04,7.07-2.929 c1.236-1.237,2.13-2.791,2.583-4.491c0.092-0.345-0.008-0.713-0.26-0.965C21.454,13.051,21.085,12.951,20.742,13.045z M17.97,17.346c-1.511,1.511-3.52,2.343-5.656,2.343c-2.137,0-4.146-0.833-5.658-2.344c-3.118-3.119-3.118-8.195,0-11.314 c0.602-0.602,1.298-1.102,2.06-1.483c-0.222,2.885,0.814,5.772,2.89,7.848c2.068,2.069,4.927,3.12,7.848,2.891 C19.072,16.046,18.571,16.743,17.97,17.346z" /></svg>;
 }
@@ -43,11 +41,11 @@ export default function MyApp({ Component, pageProps }) {
 
     const mstore = new MainStore();
 
-    const NAUTH_Socket = new NAUTH_SocketConnector();
+    const NAUTH = new NAUTH_Connector();
 
     useEffect(() => {
 
-        NAUTH_Socket.initialize_connection();
+        NAUTH.initialize_connection();
 
     }, [])
 
@@ -60,7 +58,7 @@ export default function MyApp({ Component, pageProps }) {
             <link rel="shortcut icon" href="/favicon.png" />
         </Head>
 
-        <Component {...pageProps} mstore={mstore} NAUTH_Socket={NAUTH_Socket} />
+        <Component {...pageProps} mstore={mstore} NAUTH={NAUTH} />
 
     </>
 }
@@ -109,7 +107,11 @@ class event<R, A> {
     removeListener(callback: (arg: A) => R) { this.callback_storage = this.callback_storage.filter(c => c !== callback); }
 }
 
-export class NAUTH_SocketConnector {
+
+
+export class NAUTH_Connector {
+
+    private api = dev ? 'http://localhost:3001' : 'https://nauth-api.nozsa.com';
 
     //private state
     private authSocket: Socket = null;
@@ -117,15 +119,17 @@ export class NAUTH_SocketConnector {
     private user: nauth.client.user = null;
     private session: nauth.client.session = null;
     private authStatus: boolean = false;
-    public status_working: boolean = false;
-    public type_working: "emailVeref" | "restoringSession" = "restoringSession";
-    public token: string = null;
+    private w_status: boolean = false;
+    private w_type: "emailVeref" | "restoringSession" = "restoringSession";
+    private token: string = null;
 
     //public state getters
     public get CurrentUser(): nauth.client.user { return this.user; }
     public get CurrentSession(): nauth.client.session { return this.session; }
     public get AuthStatus(): boolean { return this.authStatus; }
-
+    public get Token(): string { return this.token; }
+    public get wStatus(): boolean { return this.w_status; }
+    public get wType(): string { return this.w_type; }
 
     //user events
     public authSuccess: event<void, (nauth.client.user)>
@@ -135,14 +139,57 @@ export class NAUTH_SocketConnector {
     public sessionRevoked: event<void, (void)>
     public userDeleted: event<void, (void)>
 
+    public async REST_verifyEmail(token: string): Promise<{ status: "error" | "success", error: string }> {
+
+        return (await axios.get(`${this.api}/verifyEmail?token=${token}`)).data;
+
+    }
+
+    public async REST_createUser(username: string, email: string, password: string): Promise<{ status: "error" | "success", error: string }> {
+
+
+        let res = await axios.get(`${this.api}/register?email=${email}&username=${username}&password=${password}`);
+        if (res.data.status === "success") {
+            return await this.REST_Login(email, password);
+        }
+
+        return res.data;
+
+    }
+
+    public async REST_Login(username: string, password: string): Promise<{ status: "error" | "success", error: string }> {
+
+        let res = await axios.get(`${this.api}/Login?username=${username}&password=${password}`);
+
+        if (res.data.status === "success") {
+            this.socketAuth(res.data.token);
+        }
+
+        return res.data;
+    }
+
+    public async REST_RevokeSession(sessionID: string) {
+
+        if (!this.authStatus) return;
+        if (!sessionID) sessionID = this.session?.id;
+
+        await axios.get(`${this.api}/private/revokeSession?sessionID=${sessionID}&token=${this.token}`);
+    }
+
+    public async REST_DeleteUser(password: string): Promise<{ status: "error" | "success", error: string }> {
+
+        return await axios.get(`${this.api}/private/deleteUser?password=${password}&token=${this.token}`);
+
+    }
+
     //public actions
     public socketAuth(token: string) {
 
-        if (token)
-            this.token = token;
+        if (token) this.token = token;
+        if (!this.token) return;
 
-        this.status_working = true;
-        this.type_working = "restoringSession";
+        this.w_status = true;
+        this.w_type = "restoringSession";
 
         this.authSocket?.emit('auth', { token: this.token });
     }
@@ -157,7 +204,9 @@ export class NAUTH_SocketConnector {
         this.sessionRevoked = new event<void, (void)>();
         this.userDeleted = new event<void, (void)>();
 
+
         if (typeof window !== "undefined") {
+            // @ts-expect-error
             makePersistable(this, { name: 'NAUTH_Credentials_Store', properties: ['token'], storage: localStorage });
         }
 
@@ -187,7 +236,7 @@ export class NAUTH_SocketConnector {
         }
 
         this.authSocket = socketIOClient(
-            api,
+            this.api,
             { withCredentials: false, reconnection: false, timeout: 5000 });
         console.log("connecting");
 
@@ -236,7 +285,7 @@ export class NAUTH_SocketConnector {
 
     private on_authSuccess(data: { user: nauth.client.user, sessionID: string }) {
 
-        this.status_working = false;
+        this.w_status = false;
 
         this.authStatus = true;
         this.user = data.user;
@@ -252,10 +301,11 @@ export class NAUTH_SocketConnector {
 
     private on_authError() {
 
-        this.status_working = false;
+        this.w_status = false;
         this.authStatus = false;
         this.user = null;
         this.session = null;
+        this.token = null;
         this.authError.emit();
     }
 
@@ -272,35 +322,32 @@ export class NAUTH_SocketConnector {
     private on_sessionRevoked() {
         this.user = null;
         this.authStatus = false;
-        this.sessionRevoked.emit();
+        this.token = null;
         this.authSocket.disconnect();
+        this.sessionRevoked.emit();
     }
 
     private on_emailVerification(data: { user: nauth.client.user }) {
         this.user = data.user;
         this.authStatus = false;
 
-        this.status_working = true;
-        this.type_working = "emailVeref";
+        this.w_status = true;
+        this.w_type = "emailVeref";
     }
 
     private on_emailVerified() {
-        this.status_working = false;
+        this.w_status = false;
         this.socketAuth(null);
     }
 
     private on_userDeleted() {
 
-        this.status_working = false;
+        this.w_status = false;
         this.authStatus = false;
         this.user = null;
         this.session = null;
         this.token = null;
-        
-        console.log("user deleted");
 
         this.userDeleted.emit();
     }
-
-
 }
