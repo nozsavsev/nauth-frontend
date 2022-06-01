@@ -138,6 +138,7 @@ export class NAUTH_Connector {
     public authError: event<void, (void)>
     public sessionRevoked: event<void, (void)>
     public userDeleted: event<void, (void)>
+    public passwordChanged: event<void, (void)>
 
     public async REST_verifyEmail(token: string): Promise<{ status: "error" | "success", error: string }> {
 
@@ -177,9 +178,11 @@ export class NAUTH_Connector {
     }
 
     public async REST_DeleteUser(password: string): Promise<{ status: "error" | "success", error: string }> {
+        return (await axios.get(`${this.api}/private/deleteUser?password=${password}&token=${this.token}`)).data;
+    }
 
-        return await axios.get(`${this.api}/private/deleteUser?password=${password}&token=${this.token}`);
-
+    public async REST_ChangePasword(oldPassword: string, newPassword: string): Promise<{ status: "error" | "success", error: string }> {
+        return await axios.get(`${this.api}/private/changePassword?oldPassword=${oldPassword}&newPassword=${newPassword}&token=${this.token}`);
     }
 
     //public actions
@@ -203,7 +206,7 @@ export class NAUTH_Connector {
         this.authError = new event<void, (void)>();
         this.sessionRevoked = new event<void, (void)>();
         this.userDeleted = new event<void, (void)>();
-
+        this.passwordChanged = new event<void, (void)>();
 
         if (typeof window !== "undefined") {
             // @ts-expect-error
@@ -225,6 +228,7 @@ export class NAUTH_Connector {
         this.newSession.clearListeners();
         this.sessionRevoked.clearListeners();
         this.userDeleted.clearListeners();
+        this.passwordChanged.clearListeners();
     }
 
     //socket events
@@ -319,7 +323,12 @@ export class NAUTH_Connector {
         this.newSession.emit(data.session);
     }
 
-    private on_sessionRevoked() {
+    private on_sessionRevoked(data: { reason: string }) {
+
+        if (data?.reason === "passwordChange") {
+            this.passwordChanged.emit();
+        }
+
         this.user = null;
         this.authStatus = false;
         this.token = null;

@@ -6,7 +6,7 @@ import { NAUTH_Connector } from "../_app"
 const dev = process.env.NODE_ENV !== 'production'
 
 
-import Lottie from "lottie-react";
+import Lottie from "react-lottie-player";
 import loading from "../../public/lottie/loading.json";
 import done from "../../public/lottie/done.json";
 import error from "../../public/lottie/error.json";
@@ -56,8 +56,8 @@ const IndexPage = observer(
 
           <div >
             {
-              status === "Email verified" ? <Lottie animationData={done} loop={false} /> :
-                status === "Error" ? <Lottie animationData={error} loop={false} /> : <Lottie animationData={loading} loop={true} />
+              status === "Email verified" ? <Lottie animationData={done} play={true} loop={false} /> :
+                status === "Error" ? <Lottie animationData={error} play={true} loop={false} /> : <Lottie animationData={loading} play={true} loop={false} />
             }
           </div>
 

@@ -7,10 +7,11 @@ const dev = process.env.NODE_ENV !== 'production'
 const api = dev ? 'http://localhost:3001' : 'https://nauth-api.nozsa.com';
 
 
-import Lottie from "lottie-react";
+import Lottie from 'react-lottie-player'
 import loading from "../public/lottie/loading.json";
 import email from "../public/lottie/email.json";
 import deleted from "../public/lottie/deleted.json";
+import passwordChanged_lottie from "../public/lottie/passwordChanged.json";
 
 const IndexPage = observer(
 
@@ -19,11 +20,17 @@ const IndexPage = observer(
     const [Login_, setLogin_] = useState(false)
 
     const [userDeleted, setUserDeleted] = useState(false)
+    const [passwordChanged, setPasswordChanged] = useState(false)
     const [password, setPassword] = useState('')
+    const [newPassword, setNewPassword] = useState('')
 
     useEffect(() => {
       NAUTH.userDeleted.addLIstner(() => {
         setUserDeleted(true);
+      })
+
+      NAUTH.passwordChanged.addLIstner(() => {
+        setPasswordChanged(true);
       })
     }, [])
 
@@ -52,7 +59,7 @@ const IndexPage = observer(
 
 
 
-            <Lottie animationData={deleted} loop={false} />
+            <Lottie animationData={deleted} play={true} loop={false} />
 
           </div>
 
@@ -61,6 +68,36 @@ const IndexPage = observer(
       )
     }
 
+    if (passwordChanged) {
+      return (
+        <div className="container center" style={{ flexDirection: "row" }}>
+
+          <div style={{
+            margin: "20px",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: "1em",
+            borderRadius: "0.5em",
+            boxShadow: "0px 0px 20px 1px #ccc",
+            maxWidth: "10em",
+          }}>
+
+            <img src="/LogoBlack.svg" style={{ flex: 0, width: "90%", marginBottom: "10px", objectFit: "contain" }} />
+
+            <div style={{ minHeight: "1em", fontSize: "1em", maxWidth: "15em", wordBreak: "break-word", margin: "0.2em" }}>
+              Password changed
+            </div>
+
+            <Lottie segments={[40, 150]} animationData={passwordChanged_lottie} play={true} loop={false} />
+
+          </div>
+
+        </div>
+
+      )
+    }
 
     if (NAUTH?.wStatus) {
 
@@ -89,8 +126,8 @@ const IndexPage = observer(
             </div>
 
             {
-              (NAUTH.wType === "emailVeref") ? <Lottie animationData={email} loop={true} /> :
-                (NAUTH.wType === "restoringSession") ? <Lottie animationData={loading} loop={true} /> : ""
+              (NAUTH.wType === "emailVeref") ? <Lottie animationData={email} play={true} loop={false} /> :
+                (NAUTH.wType === "restoringSession") ? <Lottie animationData={loading} play={true} loop={false} /> : ""
             }
 
           </div>
@@ -115,12 +152,15 @@ const IndexPage = observer(
         <div className="container center" style={{ flexDirection: "column" }}>
 
           <input className='flatInput' value={password} placeholder="password" type={"password"} onChange={(e) => { setPassword(e.target.value); }} />
+          <input className='flatInput' value={newPassword} placeholder="new Pasword" type={"password"} onChange={(e) => { setNewPassword(e.target.value); }} />
+
           <button className='Button' style={{ fontSize: "15px", background: "red", fontWeight: "bold", border: "solid red" }} onClick={() => {
-
             NAUTH.REST_DeleteUser(password);
-
           }}>{"Delete user"}</button>
 
+          <button className='Button' style={{ fontSize: "15px", fontWeight: "bold" }} onClick={() => {
+            NAUTH.REST_ChangePasword(password, newPassword);
+          }}>{"Change Password"}</button>
 
           <div style={{
             margin: "20px",
@@ -255,6 +295,7 @@ export const Login = observer(({ onSuccess, onRegister, NAUTH }: { onSuccess?: a
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
 
   return (
     <div style={{
