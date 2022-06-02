@@ -126,8 +126,8 @@ const IndexPage = observer(
             </div>
 
             {
-              (NAUTH.wType === "emailVeref") ? <Lottie animationData={email} play={true} loop={false} /> :
-                (NAUTH.wType === "restoringSession") ? <Lottie animationData={loading} play={true} loop={false} /> : ""
+              (NAUTH.wType === "emailVeref") ? <Lottie animationData={email} play={true} loop={true} /> :
+                (NAUTH.wType === "restoringSession") ? <Lottie animationData={loading} play={true} loop={true} /> : ""
             }
 
           </div>
@@ -330,7 +330,8 @@ export const Login = observer(({ onSuccess, onRegister, NAUTH }: { onSuccess?: a
             if (res.status === "success") {
               setStatus('');
               setPassword("");
-              onSuccess(res);
+              if (onSuccess)
+                onSuccess(res);
             }
             else
               setStatus(res.error);
