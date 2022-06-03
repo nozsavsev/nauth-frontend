@@ -169,12 +169,12 @@ export class NAUTH_Connector {
         return res.data;
     }
 
-    public async REST_RevokeSession(sessionID: string) {
+    public async REST_RevokeSession(sessionId: string) {
 
         if (!this.authStatus) return;
-        if (!sessionID) sessionID = this.session?.id;
+        if (!sessionId) sessionId = this.session?.id;
 
-        await axios.get(`${this.api}/private/revokeSession?sessionID=${sessionID}&token=${this.token}`);
+        await axios.get(`${this.api}/private/revokeSession?sessionId=${sessionId}&token=${this.token}`);
     }
 
     public async REST_DeleteUser(password: string): Promise<{ status: "error" | "success", error: string }> {
@@ -287,13 +287,13 @@ export class NAUTH_Connector {
             this.initialize_connection();
     }
 
-    private on_authSuccess(data: { user: nauth.client.user, sessionID: string }) {
+    private on_authSuccess(data: { user: nauth.client.user, sessionId: string }) {
 
         this.w_status = false;
 
         this.authStatus = true;
         this.user = data.user;
-        this.session = this.user.sessions.find(s => s.id === data.sessionID);
+        this.session = this.user.sessions.find(s => s.id === data.sessionId);
 
         if (this.session)
             this.session.current = true;
@@ -313,9 +313,9 @@ export class NAUTH_Connector {
         this.authError.emit();
     }
 
-    private on_sessionExpired(data: { sessionID: string }) {
-        this.user = { ...this.user, sessions: [...this.user?.sessions.filter(s => s.id !== data.sessionID)] };
-        this.sessionExpired.emit(data.sessionID);
+    private on_sessionExpired(data: { sessionId: string }) {
+        this.user = { ...this.user, sessions: [...this.user?.sessions.filter(s => s.id !== data.sessionId)] };
+        this.sessionExpired.emit(data.sessionId);
     }
 
     private on_newSession(data: { session: nauth.client.session }) {
@@ -323,17 +323,30 @@ export class NAUTH_Connector {
         this.newSession.emit(data.session);
     }
 
-    private on_sessionRevoked(data: { reason: string }) {
+    private on_sessionRevoked(data: { reason: string, sessionId: string }) {
 
-        if (data?.reason === "passwordChange") {
-            this.passwordChanged.emit();
-        }
+        if (data?.reason === "passwordChange" && data?.sessionId === this.session?.id)
+            {
+                this.user.sessions = this.user.sessions.filter(s => s.id !== data.sessionId);
+                return;
+            }
 
-        this.user = null;
+        this.w_status = false;
         this.authStatus = false;
+        this.user = null;
+        this.session = null;
         this.token = null;
+
+        if (data?.reason === "passwordChange")
+            this.passwordChanged.emit();
+
+        else if (data?.reason === "userDeleted")
+            this.userDeleted.emit();
+
+        else
+            this.sessionRevoked.emit();
+
         this.authSocket.disconnect();
-        this.sessionRevoked.emit();
     }
 
     private on_emailVerification(data: { user: nauth.client.user }) {
