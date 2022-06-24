@@ -24,6 +24,8 @@ const IndexPage = observer(
     const [password, setPassword] = useState('')
     const [newPassword, setNewPassword] = useState('')
 
+    const [status, setStatus] = useState('')
+
     useEffect(() => {
       NAUTH.userDeleted.addLIstner(() => {
         setUserDeleted(true);
@@ -120,15 +122,37 @@ const IndexPage = observer(
 
             <div style={{ minHeight: "1em", fontSize: "1em", maxWidth: "15em", wordBreak: "break-word", textAlign: "center", margin: "0.2em" }}>
               {
-                (NAUTH.wType === "emailVeref") ? "Email verification for\n" + NAUTH?.CurrentUser?.email :
+                (NAUTH.wType === "emailVeref") ? NAUTH?.CurrentUser?.email :
                   (NAUTH.wType === "restoringSession") ? "Logging in" : ""
               }
             </div>
+
+            {status}
 
             {
               (NAUTH.wType === "emailVeref") ? <Lottie animationData={email} play={true} loop={true} /> :
                 (NAUTH.wType === "restoringSession") ? <Lottie animationData={loading} play={true} loop={true} /> : ""
             }
+
+            {
+              (NAUTH.wType === "emailVeref") ? <div style={{ cursor: "pointer" }} onClick={() => {
+
+                NAUTH.REST_resendEmailVerification(NAUTH?.CurrentUser?.email).then((e) => {
+
+                  setStatus(e.error)
+
+                  setTimeout(() => {
+                    setStatus('');
+                  }, 2000)
+
+                })
+
+              }}>
+                Resend
+              </div> :
+                <div />
+            }
+
 
           </div>
 
@@ -354,11 +378,23 @@ export const Login = observer(({ onSuccess, onRegister, NAUTH }: { onSuccess?: a
 
       }}>Login</button>
 
-
-
       <button className='flatButton' style={{ flex: 1, width: "100%" }} onClick={() => {
         onRegister();
       }}>Register</button>
+
+
+      <button className='flatButton' style={{ flex: 1, height: "20px", fontSize: "16px", width: "100%" }} onClick={() => {
+
+        NAUTH.REST_RequestPasswordReset(username).then(res => {
+
+          if (res.status === "success")
+            setStatus("Password reset link sent to your email");
+          else
+            setStatus(res.error);
+
+        });
+
+      }}>Reset Password</button>
 
 
 

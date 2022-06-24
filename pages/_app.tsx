@@ -158,6 +158,18 @@ export class NAUTH_Connector {
 
     }
 
+    public async REST_resendEmailVerification(email: string): Promise<{ status: "error" | "success", error: string, time?: number }> {
+
+
+        console.log("resendEmailVerification", email);
+
+        let res = await axios.get(`${this.api}/resendVerificationEmail?email=${email}`);
+
+        console.log(res);
+        return res.data;
+
+    }
+
     public async REST_Login(username: string, password: string): Promise<{ status: "error" | "success", error: string }> {
 
         let res = await axios.get(`${this.api}/Login?username=${username}&password=${password}`);
@@ -182,7 +194,15 @@ export class NAUTH_Connector {
     }
 
     public async REST_ChangePasword(oldPassword: string, newPassword: string): Promise<{ status: "error" | "success", error: string }> {
-        return await axios.get(`${this.api}/private/changePassword?oldPassword=${oldPassword}&newPassword=${newPassword}&token=${this.token}`);
+        return (await axios.get(`${this.api}/private/changePassword?oldPassword=${oldPassword}&newPassword=${newPassword}&token=${this.token}`)).data;
+    }
+
+    public async REST_RequestPasswordReset(username: string): Promise<{ status: "error" | "success", error: string }> {
+        return (await axios.get(`${this.api}/requestPasswordReset?username=${username}`)).data;
+    }
+
+    public async REST_ResetPassword(token: string, password: string): Promise<{ status: "error" | "success", error: string }> {
+        return (await axios.get(`${this.api}/resetPassword?token=${token}&password=${password}`)).data;
     }
 
     //public actions
@@ -325,11 +345,10 @@ export class NAUTH_Connector {
 
     private on_sessionRevoked(data: { reason: string, sessionId: string }) {
 
-        if (data?.reason === "passwordChange" && data?.sessionId === this.session?.id)
-            {
-                this.user.sessions = this.user.sessions.filter(s => s.id !== data.sessionId);
-                return;
-            }
+        if (data?.reason === "passwordChange" && data?.sessionId === this.session?.id) {
+            this.user.sessions = this.user.sessions.filter(s => s.id === data.sessionId);
+            return;
+        }
 
         this.w_status = false;
         this.authStatus = false;
