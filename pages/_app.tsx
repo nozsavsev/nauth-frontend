@@ -119,7 +119,7 @@ export class NAUTH_Connector {
     private user: nauth.client.user = null;
     private session: nauth.client.session = null;
     private authStatus: boolean = false;
-    private w_status: boolean = false;
+    private w_status: boolean = true;
     private w_type: "emailVeref" | "restoringSession" = "restoringSession";
     private token: string = null;
 
@@ -209,12 +209,15 @@ export class NAUTH_Connector {
     public socketAuth(token: string) {
 
         if (token) this.token = token;
-        if (!this.token) return;
-
+        if (!this.token) {
+            this.w_status = false;
+            return;
+        }
         this.w_status = true;
         this.w_type = "restoringSession";
 
         this.authSocket?.emit('auth', { token: this.token });
+        console.log("socketAuth", this.token);
     }
 
     constructor() {
@@ -232,7 +235,6 @@ export class NAUTH_Connector {
             // @ts-expect-error
             makePersistable(this, { name: 'NAUTH_Credentials_Store', properties: ['token'], storage: localStorage });
         }
-
     }
 
     dispose() {
@@ -309,6 +311,8 @@ export class NAUTH_Connector {
 
     private on_authSuccess(data: { user: nauth.client.user, sessionId: string }) {
 
+        console.log("authSuccess");
+
         this.w_status = false;
 
         this.authStatus = true;
@@ -324,6 +328,8 @@ export class NAUTH_Connector {
     }
 
     private on_authError() {
+
+        console.log("authError");
 
         this.w_status = false;
         this.authStatus = false;
@@ -345,7 +351,7 @@ export class NAUTH_Connector {
 
     private on_sessionRevoked(data: { reason: string, sessionId: string }) {
 
-        if (data?.reason === "passwordChange" && data?.sessionId === this.session?.id) {
+        if (data?.reason === "passwordChanged" && data?.sessionId === this.session?.id) {
             this.user.sessions = this.user.sessions.filter(s => s.id === data.sessionId);
             return;
         }
@@ -356,7 +362,7 @@ export class NAUTH_Connector {
         this.session = null;
         this.token = null;
 
-        if (data?.reason === "passwordChange")
+        if (data?.reason === "passwordChanged")
             this.passwordChanged.emit();
 
         else if (data?.reason === "userDeleted")
