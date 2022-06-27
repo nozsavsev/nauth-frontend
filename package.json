@@ -7,32 +7,33 @@
     "type-check": "tsc"
   },
   "dependencies": {
-    "@babel/core": "^7.17.10",
-    "@babel/plugin-proposal-decorators": "^7.17.9",
-    "@headlessui/react": "^1.6.2",
+    "@babel/core": "^7.18.5",
+    "@babel/plugin-proposal-decorators": "^7.18.2",
+    "@headlessui/react": "^1.6.5",
     "axios": "^0.27.2",
     "babel": "^6.23.0",
     "babel-plugin-transform-typescript-metadata": "^0.3.2",
     "localforage": "^1.10.0",
-    "mobx": "^6.5.0",
+    "mobx": "^6.6.1",
     "mobx-persist": "^0.4.1",
     "mobx-persist-store": "^1.0.6",
-    "mobx-react": "^7.3.0",
-    "next": "latest",
-    "react": "^17.0.2",
+    "mobx-react": "^7.5.1",
+    "next": "^12.1.6",
+    "react": "^18.2.0",
     "react-cookies": "^0.1.1",
-    "react-dom": "^17.0.2",
+    "react-dom": "^18.2.0",
     "react-lottie-player": "^1.4.3",
     "react-qr-code": "^2.0.7",
     "react-qr-scanner": "^1.0.0-alpha.8",
-    "recoil": "^0.7.3-alpha.2",
-    "socket.io-client": "^4.5.0",
+    "recoil": "^0.7.4",
+    "socket.io-client": "^4.5.1",
     "uuidv4": "^6.2.13"
   },
   "devDependencies": {
-    "@types/node": "^12.12.21",
-    "@types/react": "^17.0.2",
-    "@types/react-dom": "^17.0.1",
-    "typescript": "4.0"
+    "@types/node": "^18.0.0",
+    "@types/react": "^18.0.14",
+    "@types/react-dom": "^18.0.5",
+    "typescript": "^4.7.4",
+    "yarn-upgrade-all": "^0.7.1"
   }
 }
