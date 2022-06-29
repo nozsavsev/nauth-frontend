@@ -103,61 +103,73 @@ const IndexPage = observer(
 
     if (NAUTH?.wStatus) {
 
-      return (
-        <div className="container center" style={{ flexDirection: "row" }}>
 
-          <div style={{
-            margin: "20px",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            padding: "1em",
-            borderRadius: "0.5em",
-            boxShadow: "0px 0px 20px 1px #ccc",
-            maxWidth: "10em",
-          }}>
+      if (NAUTH.wStatus) {
 
-            <img src="LogoBlack.svg" style={{ flex: 0, width: "90%", marginBottom: "10px", objectFit: "contain" }} />
-
-            <div style={{ minHeight: "1em", fontSize: "1em", maxWidth: "15em", wordBreak: "break-word", textAlign: "center", margin: "0.2em" }}>
-              {
-                (NAUTH.wType === "emailVeref") ? NAUTH?.CurrentUser?.email :
-                  (NAUTH.wType === "restoringSession") ? "Logging in" : ""
-              }
+        if (NAUTH.wType === "restoringSession")
+          return <div className="container">
+            <div style={{
+              margin: "20px",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              padding: "1em",
+              borderRadius: "0.5em",
+              boxShadow: "0px 0px 20px 1px #ccc",
+              maxWidth: "10em",
+            }}>
+              <img src="LogoBlack.svg" style={{ flex: 0, width: "90%", marginBottom: "10px", objectFit: "contain" }} />
+              <div style={{ minHeight: "1em", fontSize: "1em", fontWeight: "bolder", maxWidth: "15em", wordBreak: "break-word", margin: "0.2em" }}>
+                Restoring session
+              </div>
+              <Lottie animationData={loading} play={true} loop={true} />
             </div>
-
-            {status}
-
-            {
-              (NAUTH.wType === "emailVeref") ? <Lottie animationData={email} play={true} loop={true} /> :
-                (NAUTH.wType === "restoringSession") ? <Lottie animationData={loading} play={true} loop={true} /> : ""
-            }
-
-            {
-              (NAUTH.wType === "emailVeref") ? <div style={{ cursor: "pointer" }} onClick={() => {
-
-                NAUTH.REST_resendEmailVerification(NAUTH?.CurrentUser?.email).then((e) => {
-
-                  setStatus(e.error)
-
-                  setTimeout(() => {
-                    setStatus('');
-                  }, 2000)
-
-                })
-
-              }}>
-                Resend
-              </div> :
-                <div />
-            }
-
-
           </div>
 
-        </div>
-      )
+        else if (NAUTH.wType === "emailVeref")
+          return <div className="container">
+            <div style={{
+              margin: "20px",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              padding: "1em",
+              borderRadius: "0.5em",
+              boxShadow: "0px 0px 20px 1px #ccc",
+              maxWidth: "10em",
+            }}>
+              <img src="LogoBlack.svg" style={{ flex: 0, width: "90%", marginBottom: "10px", objectFit: "contain" }} />
+              <div style={{ minHeight: "1em", fontSize: "1em", fontWeight: "bolder", maxWidth: "15em", wordBreak: "break-word", margin: "0.2em" }}>
+                Email verification {NAUTH.CurrentUser.email}
+              </div>
+              <Lottie animationData={email} play={true} loop={true} />
+            </div>
+          </div>
+        else if (NAUTH.wType === "awaitingPasswordReset")
+          return <div className="container">
+            <div style={{
+              margin: "20px",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              padding: "1em",
+              borderRadius: "0.5em",
+              boxShadow: "0px 0px 20px 1px #ccc",
+              maxWidth: "10em",
+            }}>
+              <img src="LogoBlack.svg" style={{ flex: 0, width: "90%", marginBottom: "10px", objectFit: "contain" }} />
+              <div style={{ minHeight: "1em", fontSize: "1em", fontWeight: "bolder", maxWidth: "15em", wordBreak: "break-word", margin: "0.2em" }}>
+                Awaiting password reset
+              </div>
+              <Lottie animationData={email} play={true} loop={true} />
+            </div>
+          </div>
+      }
+
+
     }
     else if (!NAUTH?.AuthStatus)
       return (
@@ -197,6 +209,7 @@ const IndexPage = observer(
             borderRadius: "0.5em",
             boxShadow: "0px 0px 20px 1px #ccc"
           }}>
+
             <table>
               <tbody>
                 {
@@ -229,6 +242,7 @@ const IndexPage = observer(
                 }
               </tbody>
             </table>
+
           </div>
         </div>
       )

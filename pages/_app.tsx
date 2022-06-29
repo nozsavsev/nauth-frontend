@@ -2,7 +2,9 @@ import './global.css'
 
 import socketIOClient, { Socket } from "socket.io-client";
 import React, { useState, useEffect } from 'react'
+import cookie from 'react-cookies'
 import axios from 'axios';
+
 
 const dev = process.env.NODE_ENV !== 'production'
 
@@ -120,16 +122,35 @@ export class NAUTH_Connector {
     private session: nauth.client.session = null;
     private authStatus: boolean = false;
     private w_status: boolean = true;
-    private w_type: "emailVeref" | "restoringSession" = "restoringSession";
-    private token: string = null;
+    private w_type: "emailVeref" | "restoringSession" | "awaitingPasswordReset" = "restoringSession";
+
+    private getToken(): string { return cookie.load('NAUTH_AUTHENTICATION_TOKEN') || null; }
+    private setToken(value: string) {
+        if (value)
+            cookie.save('NAUTH_AUTHENTICATION_TOKEN', value, { path: '/', maxAge: 987987987 });
+        else
+            cookie.remove('NAUTH_AUTHENTICATION_TOKEN', { path: '/' });
+    }
+
+
+    private getWaitToken(): string { return cookie.load('NAUTH_WAIT_TOKEN') || null; }
+    private setWaitToken(value: string) {
+
+        if (value)
+            cookie.save('NAUTH_WAIT_TOKEN', value, { path: '/', maxAge: 987987987 });
+        else
+            cookie.remove('NAUTH_WAIT_TOKEN', { path: '/' });
+
+    }
+
 
     //public state getters
     public get CurrentUser(): nauth.client.user { return this.user; }
     public get CurrentSession(): nauth.client.session { return this.session; }
     public get AuthStatus(): boolean { return this.authStatus; }
-    public get Token(): string { return this.token; }
+    public get Token(): string { return this.getToken(); }
     public get wStatus(): boolean { return this.w_status; }
-    public get wType(): string { return this.w_type; }
+    public get wType(): "emailVeref" | "restoringSession" | "awaitingPasswordReset" { return this.w_type; }
 
     //user events
     public authSuccess: event<void, (nauth.client.user)>
@@ -159,15 +180,8 @@ export class NAUTH_Connector {
     }
 
     public async REST_resendEmailVerification(email: string): Promise<{ status: "error" | "success", error: string, time?: number }> {
-
-
-        console.log("resendEmailVerification", email);
-
         let res = await axios.get(`${this.api}/resendVerificationEmail?email=${email}`);
-
-        console.log(res);
         return res.data;
-
     }
 
     public async REST_Login(username: string, password: string): Promise<{ status: "error" | "success", error: string }> {
@@ -186,19 +200,30 @@ export class NAUTH_Connector {
         if (!this.authStatus) return;
         if (!sessionId) sessionId = this.session?.id;
 
-        await axios.get(`${this.api}/private/revokeSession?sessionId=${sessionId}&token=${this.token}`);
+        await axios.get(`${this.api}/private/revokeSession?sessionId=${sessionId}&token=${this.getToken()}`);
     }
 
     public async REST_DeleteUser(password: string): Promise<{ status: "error" | "success", error: string }> {
-        return (await axios.get(`${this.api}/private/deleteUser?password=${password}&token=${this.token}`)).data;
+        return (await axios.get(`${this.api}/private/deleteUser?password=${password}&token=${this.getToken()}`)).data;
     }
 
     public async REST_ChangePasword(oldPassword: string, newPassword: string): Promise<{ status: "error" | "success", error: string }> {
-        return (await axios.get(`${this.api}/private/changePassword?oldPassword=${oldPassword}&newPassword=${newPassword}&token=${this.token}`)).data;
+        return (await axios.get(`${this.api}/private/changePassword?oldPassword=${oldPassword}&newPassword=${newPassword}&token=${this.getToken()}`)).data;
     }
 
     public async REST_RequestPasswordReset(username: string): Promise<{ status: "error" | "success", error: string }> {
-        return (await axios.get(`${this.api}/requestPasswordReset?username=${username}`)).data;
+        let data = (await axios.get(`${this.api}/requestPasswordReset?username=${username}`)).data;
+
+        if (data.status === "success") {
+
+            this.w_status = true;
+            this.w_type = "awaitingPasswordReset";
+
+            this.setWaitToken(data.waitToken);
+            this.authSocket.emit("waitForPasswordReset", { waitToken: this.getWaitToken() });
+        }
+
+        return data;
     }
 
     public async REST_ResetPassword(token: string, password: string): Promise<{ status: "error" | "success", error: string }> {
@@ -208,16 +233,19 @@ export class NAUTH_Connector {
     //public actions
     public socketAuth(token: string) {
 
-        if (token) this.token = token;
-        if (!this.token) {
+        if (token) this.setToken(token);
+
+        if (!this.getToken()) {
             this.w_status = false;
+            this.waitPasswordReset();
             return;
         }
+
         this.w_status = true;
         this.w_type = "restoringSession";
 
-        this.authSocket?.emit('auth', { token: this.token });
-        console.log("socketAuth", this.token);
+        this.authSocket?.emit('auth', { token: this.getToken() });
+
     }
 
     constructor() {
@@ -230,11 +258,6 @@ export class NAUTH_Connector {
         this.sessionRevoked = new event<void, (void)>();
         this.userDeleted = new event<void, (void)>();
         this.passwordChanged = new event<void, (void)>();
-
-        if (typeof window !== "undefined") {
-            // @ts-expect-error
-            makePersistable(this, { name: 'NAUTH_Credentials_Store', properties: ['token'], storage: localStorage });
-        }
     }
 
     dispose() {
@@ -253,6 +276,8 @@ export class NAUTH_Connector {
         this.passwordChanged.clearListeners();
     }
 
+
+
     //socket events
     public initialize_connection() {
 
@@ -264,15 +289,18 @@ export class NAUTH_Connector {
         this.authSocket = socketIOClient(
             this.api,
             { withCredentials: false, reconnection: false, timeout: 5000 });
-        console.log("connecting");
-
         this.authSocket.on('connect', this.on_connect.bind(this));
 
     }
 
-    private on_connect() {
+    private waitPasswordReset() {
+        this.w_status = true;
+        this.w_type = "awaitingPasswordReset";
+        this.authSocket.emit('waitForPasswordReset', { waitToken: this.getWaitToken() });
 
-        console.log("connect");
+    }
+
+    private on_connect() {
 
         if (this.authSocket) {
 
@@ -287,8 +315,7 @@ export class NAUTH_Connector {
             this.authSocket.on('emailVerification', this.on_emailVerification.bind(this));
             this.authSocket.on('emailVerified', this.on_emailVerified.bind(this));
             this.authSocket.on('userDeleted', this.on_userDeleted.bind(this));
-
-            console.log('auth');
+            this.authSocket.on('waitForPasswordReset', this.on_waitForPasswordReset.bind(this));
 
             this.socketAuth(null);
         }
@@ -311,8 +338,6 @@ export class NAUTH_Connector {
 
     private on_authSuccess(data: { user: nauth.client.user, sessionId: string }) {
 
-        console.log("authSuccess");
-
         this.w_status = false;
 
         this.authStatus = true;
@@ -322,20 +347,20 @@ export class NAUTH_Connector {
         if (this.session)
             this.session.current = true;
 
-        console.log({ ...data.user });
+        this.setWaitToken(null);
 
         this.authSuccess.emit(data.user);
     }
 
     private on_authError() {
-
-        console.log("authError");
-
         this.w_status = false;
         this.authStatus = false;
         this.user = null;
         this.session = null;
-        this.token = null;
+        this.setToken(null);
+
+        this.waitPasswordReset();
+
         this.authError.emit();
     }
 
@@ -360,7 +385,7 @@ export class NAUTH_Connector {
         this.authStatus = false;
         this.user = null;
         this.session = null;
-        this.token = null;
+        this.setToken(null);
 
         if (data?.reason === "passwordChanged")
             this.passwordChanged.emit();
@@ -393,8 +418,24 @@ export class NAUTH_Connector {
         this.authStatus = false;
         this.user = null;
         this.session = null;
-        this.token = null;
+        this.setToken(null);
 
         this.userDeleted.emit();
+    }
+
+    private on_waitForPasswordReset(data: { status: "error" | "success", token: string }) {
+
+        this.setWaitToken(null);
+
+        if (data.status === "success")
+            this.socketAuth(data.token);
+
+        else if (data.status === "error" && this.w_type === "awaitingPasswordReset") {
+            this.w_status = false;
+            this.authStatus = false;
+            this.user = null;
+            this.session = null;
+            this.setToken('');
+        }
     }
 }
