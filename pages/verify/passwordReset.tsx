@@ -19,10 +19,20 @@ const IndexPage = observer(
     const [token, setToken] = useState("")
     const [password, setPassword] = useState("")
 
+    const [os, setOs] = useState("")
+    const [ip, setIp] = useState("")
+    const [device, setDevice] = useState("")
+
+    const [logMeIn, setLogMeIn] = useState<boolean>(false)
 
     useEffect(() => {
-      setToken(window.location.href.split("?token=")[1])
-
+      const query = new URLSearchParams(window.location.search);
+      
+      setToken(query.get("token") || "")
+      
+      setOs(query.get("os") || "") 
+      setIp(query.get("ip") || "")
+      setDevice(query.get("device") || "")
 
     }, [])
 
@@ -51,9 +61,13 @@ const IndexPage = observer(
 
           <input className='flatInput' type={"password"} value={password} placeholder="password" onChange={(e) => { setStatus(''); setPassword(e.target.value); }} />
 
+          <div>
+            <input className='flatInput' type={"checkbox"} checked={logMeIn} onChange={(e) => { setLogMeIn(e.target.checked); }} />
+            log me on {device} {os} ({ip})
+          </div>
           <button className='Button' style={{ flex: 1, width: "100%" }} onClick={async () => {
 
-            NAUTH.REST_ResetPassword(token, password).then(res => {
+            NAUTH.REST_ResetPassword(token, password,logMeIn).then(res => {
               if (res.status === "success")
                 setStatus("Password changed successfully");
               else

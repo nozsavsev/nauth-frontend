@@ -121,7 +121,7 @@ export class NAUTH_Connector {
     private user: nauth.client.user = null;
     private session: nauth.client.session = null;
     private authStatus: boolean = false;
-    private w_status: boolean = true;
+    private w_status: boolean = false;
     private w_type: "emailVeref" | "restoringSession" | "awaitingPasswordReset" = "restoringSession";
 
     private getToken(): string { return cookie.load('NAUTH_AUTHENTICATION_TOKEN') || null; }
@@ -226,8 +226,8 @@ export class NAUTH_Connector {
         return data;
     }
 
-    public async REST_ResetPassword(token: string, password: string): Promise<{ status: "error" | "success", error: string }> {
-        return (await axios.get(`${this.api}/resetPassword?token=${token}&password=${password}`)).data;
+    public async REST_ResetPassword(token: string, password: string, logMeIn: boolean): Promise<{ status: "error" | "success", error: string }> {
+        return (await axios.get(`${this.api}/resetPassword?token=${token}&password=${password}&login=${logMeIn}`)).data;
     }
 
     //public actions
