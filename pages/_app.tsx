@@ -113,7 +113,7 @@ class event<R, A> {
 
 export class NAUTH_Connector {
 
-    private api = 'https://nauth-api.nozsa.com';//dev ? 'http://localhost:3001' : 'https://nauth-api.nozsa.com';
+    private api = dev ? 'http://localhost:3001' : 'https://nauth-api.nozsa.com';
 
     //private state
     private authSocket: Socket = null;
