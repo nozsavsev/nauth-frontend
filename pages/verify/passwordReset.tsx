@@ -27,12 +27,12 @@ const IndexPage = observer(
 
     useEffect(() => {
       const query = new URLSearchParams(window.location.search);
-      
+
       setToken(query.get("token") || "")
-      
-      setOs(query.get("os") || "") 
-      setIp(query.get("ip") || "")
-      setDevice(query.get("device") || "")
+
+      setOs(atob(query.get("os")) || "")
+      setIp(atob(query.get("ip")) || "")
+      setDevice(atob(query.get("device")) || "")
 
     }, [])
 
@@ -67,7 +67,7 @@ const IndexPage = observer(
           </div>
           <button className='Button' style={{ flex: 1, width: "100%" }} onClick={async () => {
 
-            NAUTH.REST_ResetPassword(token, password,logMeIn).then(res => {
+            NAUTH.REST_ResetPassword(token, password, logMeIn).then(res => {
               if (res.status === "success")
                 setStatus("Password changed successfully");
               else
