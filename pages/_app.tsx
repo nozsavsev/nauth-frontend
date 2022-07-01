@@ -113,7 +113,7 @@ class event<R, A> {
 
 export class NAUTH_Connector {
 
-    private api = dev ? 'http://localhost:3001' : 'https://nauth-api.nozsa.com';
+    private api = 'https://nauth-api.nozsa.com';//dev ? 'http://localhost:3001' : 'https://nauth-api.nozsa.com';
 
     //private state
     private authSocket: Socket = null;
@@ -212,7 +212,13 @@ export class NAUTH_Connector {
     }
 
     public async REST_RequestPasswordReset(username: string): Promise<{ status: "error" | "success", error: string }> {
+        
+        console.log("requesting password reset");
+
         let data = (await axios.get(`${this.api}/requestPasswordReset?username=${username}`)).data;
+        
+        console.log(data);
+
 
         if (data.status === "success") {
 

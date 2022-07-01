@@ -5,6 +5,12 @@ import { NAUTH_Connector } from "../_app"
 
 const dev = process.env.NODE_ENV !== 'production'
 
+export const encodeBase64 = (data) => {
+  return Buffer.from(data).toString('base64');
+}
+export const decodeBase64 = (data) => {
+  return Buffer.from(data, 'base64').toString('ascii');
+}
 
 import Lottie from "react-lottie-player";
 import loading from "../../public/lottie/loading.json";
@@ -30,9 +36,9 @@ const IndexPage = observer(
 
       setToken(query.get("token") || "")
 
-      setOs(atob(query.get("os")) || "")
-      setIp(atob(query.get("ip")) || "")
-      setDevice(atob(query.get("device")) || "")
+      setOs(decodeBase64(query.get("os")) || "")
+      setIp(decodeBase64(query.get("ip")) || "")
+      setDevice(decodeBase64(query.get("device")) || "")
 
     }, [])
 
