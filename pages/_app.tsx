@@ -103,7 +103,7 @@ class event<R, A> {
 
 export class NAUTH_Connector {
 
-    private api = dev ? 'http://localhost:3001' : 'https://nauth-api.nozsa.com';
+    private api = 'https://nauth-api.nozsa.com';//dev ? 'http://localhost:3001' : 'https://nauth-api.nozsa.com';
 
     //private state
     private authSocket: Socket = null;
@@ -290,9 +290,11 @@ export class NAUTH_Connector {
     }
 
     private waitPasswordReset() {
-        this.w_status = true;
-        this.w_type = "awaitingPasswordReset";
-        this.authSocket.emit('waitForPasswordReset', { waitToken: this.getWaitToken() });
+        if (this.getWaitToken()) {
+            this.w_status = true;
+            this.w_type = "awaitingPasswordReset";
+            this.authSocket.emit('waitForPasswordReset', { waitToken: this.getWaitToken() });
+        }
 
     }
 
