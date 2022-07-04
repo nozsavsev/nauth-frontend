@@ -187,70 +187,16 @@ const IndexPage = observer(
       return (
         <div className="container center" style={{ flexDirection: "column" }}>
 
-          <input className='flatInput' value={password} placeholder="password" type={"password"} onChange={(e) => { setPassword(e.target.value); }} />
-          <input className='flatInput' value={newPassword} placeholder="new Pasword" type={"password"} onChange={(e) => { setNewPassword(e.target.value); }} />
 
-          <button className='Button' style={{ fontSize: "15px", background: "red", fontWeight: "bold", border: "solid red" }} onClick={() => {
-            NAUTH.REST_DeleteUser(password);
-          }}>{"Delete user"}</button>
 
-          <button className='Button' style={{ fontSize: "15px", fontWeight: "bold" }} onClick={() => {
-            NAUTH.REST_ChangePasword(password, newPassword);
-          }}>{"Change Password"}</button>
-
-          <div style={{
-            margin: "20px",
-            width: "350px",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "flex-start",
-            alignItems: "center",
-            padding: "1em",
-            borderRadius: "0.5em",
-            boxShadow: "0px 0px 20px 1px #ccc"
-          }}>
-
-            <table>
-
-              <thead style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <tr >
-                  <td aria-colspan={2}>First Name</td>
-                </tr>
-              </thead>
-
-              <tbody>
-                {
-                  NAUTH.CurrentUser.sessions.map((session, index) => {
-
-                    return <tr key={index}>
-
-                      <td>
-
-                        <table style={{ fontWeight: session.current ? "bold" : "normal", }}>
-                          <tbody>
-                            <tr>
-                              <td> {session.os} |</td>
-                              <td> {session.device} </td>
-                            </tr>
-                            <tr>
-                              <td colSpan={3} style={{ fontSize: "0.5em", color: "#888" }}>{session.id}</td>
-                            </tr>
-                          </tbody>
-                        </table>
-
-                      </td>
-
-                      <td> <button className='Button' style={{ fontSize: "15px", }} onClick={() => {
-                        NAUTH.REST_RevokeSession(session.id);
-                      }}>{session.current ? "Logout" : "Revoke"}</button>
-                      </td>
-                    </tr>
-                  })
-                }
-              </tbody>
-            </table>
-
+          <div style={{ display: "flex" }}>
+            <DeleteUser NAUTH={NAUTH} />
+            <ChangePassword NAUTH={NAUTH} />
           </div>
+
+          <SessionManager NAUTH={NAUTH} />
+
+
         </div>
       )
   }
@@ -260,6 +206,155 @@ const IndexPage = observer(
 export default IndexPage
 
 
+export const SessionManager = observer(({ NAUTH }: { NAUTH: NAUTH_Connector }) => {
+
+  return (
+
+    <div style={{
+      margin: "20px",
+      width: "350px",
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "flex-start",
+      alignItems: "center",
+      padding: "1em",
+      borderRadius: "0.5em",
+      boxShadow: "0px 0px 20px 1px #ccc"
+    }}>
+      <table>
+        <tbody>
+          {
+            NAUTH.CurrentUser.sessions.map((session, index) => {
+
+              return <tr key={index}>
+
+                <td>
+
+                  <table style={{ fontWeight: session.current ? "bold" : "normal", }}>
+                    <tbody>
+                      <tr>
+                        <td> {session.os} |</td>
+                        <td> {session.device} </td>
+                      </tr>
+                      <tr>
+                        <td colSpan={3} style={{ fontSize: "0.5em", color: "#888" }}>{session.id}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+                </td>
+
+                <td> <button className='Button' style={{ fontSize: "15px", }} onClick={() => {
+                  NAUTH.REST_RevokeSession(session.id);
+                }}>{session.current ? "Logout" : "Revoke"}</button>
+                </td>
+              </tr>
+            })
+          }
+        </tbody>
+      </table>
+
+    </div>
+
+
+  )
+})
+
+export const DeleteUser = observer(({ onSuccess, NAUTH }: { onSuccess?: any, NAUTH: NAUTH_Connector }) => {
+
+  const [status, setStatus] = useState('');
+
+  const [password, setPassword] = useState('');
+
+
+  return (
+    <div style={{
+      margin: "10px",
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: "1em",
+      paddingTop: "0",
+      borderRadius: "0.5em",
+      boxShadow: "0px 0px 20px 1px #ccc",
+      maxWidth: "10em",
+    }}>
+
+
+      <img src="LogoBlack.svg" style={{ flex: 0, width: "90%", margin: "10px", marginTop: '30px', objectFit: "contain" }} />
+
+
+      <div style={{ minHeight: "1em", fontSize: "0.7em", maxWidth: "15em", wordBreak: "break-word", margin: "0.2em" }}>
+        {status}
+      </div>
+
+      <input className='flatInput' value={password} placeholder="password" type={"password"} onChange={(e) => { setStatus(''); setPassword(e.target.value); }} />
+
+
+      <button style={{ fontSize: "15px", background: "red", fontWeight: "bold", border: "solid red" }} className='Button' onAnimationEnd={() => { console.log('end') }} onClick={async () => {
+
+        if ((await NAUTH.REST_DeleteUser(password)).status === "success") {
+          if (onSuccess)
+            onSuccess();
+        }
+        else
+          setStatus("Password incorrect");
+
+      }}>{"Delete user"}</button>
+
+    </div>
+
+  )
+})
+
+export const ChangePassword = observer(({ onSuccess, NAUTH }: { onSuccess?: any, NAUTH: NAUTH_Connector }) => {
+
+  const [status, setStatus] = useState('');
+
+  const [password, setPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+
+
+  return (
+    <div style={{
+      margin: "10px",
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: "1em",
+      paddingTop: "0",
+      borderRadius: "0.5em",
+      boxShadow: "0px 0px 20px 1px #ccc",
+      maxWidth: "10em",
+    }}>
+
+
+      <div style={{ minHeight: "1em", fontSize: "0.7em", maxWidth: "15em", wordBreak: "break-word", margin: "0.2em" }}>
+        {status}
+      </div>
+
+      <input className='flatInput' value={password} placeholder="password" type={"password"} onChange={(e) => { setStatus(''); setPassword(e.target.value); }} />
+      <input className='flatInput' value={newPassword} placeholder="one more time" type={"password"} onChange={(e) => { setStatus(''); setNewPassword(e.target.value); }} />
+
+
+      <button className='Button' style={{ fontSize: "15px", fontWeight: "bold" }} onClick={async () => {
+
+        let res = await NAUTH.REST_ChangePasword(password, newPassword);
+        if (res.status === "success") {
+          if (onSuccess)
+            onSuccess(res);
+        }
+        else
+          setStatus(res.error);
+
+      }}>{"Change Password"}</button>
+
+    </div>
+
+  )
+})
 
 export const Register = observer(({ onSuccess, onLogin, NAUTH }: { onSuccess?: any, onLogin: any, NAUTH: NAUTH_Connector }) => {
 

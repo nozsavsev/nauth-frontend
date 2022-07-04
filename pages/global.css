@@ -3,10 +3,6 @@ body {
   transition: 0.2s;
 }
 
-*{
-  transition: 0.2s all ease-in-out;
-}
-
 .container {
   position: absolute;
   width: 100%;
@@ -113,4 +109,10 @@ img {
   color: #000000;
   background-color: #ffffff;
   transition: 0.5s;
+}
+
+.DeleteButton:hover{
+                   
+  background-color: #000000;
+  
 }
