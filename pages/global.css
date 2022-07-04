@@ -3,6 +3,10 @@ body {
   transition: 0.2s;
 }
 
+*{
+  transition: 0.2s all ease-in-out;
+}
+
 .container {
   position: absolute;
   width: 100%;

@@ -234,7 +234,7 @@ export class NAUTH_Connector {
         if (!this.getToken()) {
             this.w_status = false;
             this.waitPasswordReset();
-            return;
+            return; 
         }
 
         this.w_status = true;

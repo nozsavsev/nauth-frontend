@@ -211,6 +211,13 @@ const IndexPage = observer(
           }}>
 
             <table>
+
+              <thead style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <tr >
+                  <td aria-colspan={2}>First Name</td>
+                </tr>
+              </thead>
+
               <tbody>
                 {
                   NAUTH.CurrentUser.sessions.map((session, index) => {
@@ -218,7 +225,8 @@ const IndexPage = observer(
                     return <tr key={index}>
 
                       <td>
-                        <table style={{ fontWeight: session.current ? "bold" : "normal" }}>
+
+                        <table style={{ fontWeight: session.current ? "bold" : "normal", }}>
                           <tbody>
                             <tr>
                               <td> {session.os} |</td>
@@ -229,14 +237,13 @@ const IndexPage = observer(
                             </tr>
                           </tbody>
                         </table>
+
                       </td>
 
                       <td> <button className='Button' style={{ fontSize: "15px", }} onClick={() => {
-
                         NAUTH.REST_RevokeSession(session.id);
-
-
-                      }}>{session.current ? "Logout" : "Revoke"}</button></td>
+                      }}>{session.current ? "Logout" : "Revoke"}</button>
+                      </td>
                     </tr>
                   })
                 }
