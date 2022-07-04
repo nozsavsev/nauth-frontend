@@ -335,8 +335,8 @@ export const ChangePassword = observer(({ onSuccess, NAUTH }: { onSuccess?: any,
         {status}
       </div>
 
-      <input className='flatInput' value={password} placeholder="password" type={"password"} onChange={(e) => { setStatus(''); setPassword(e.target.value); }} />
-      <input className='flatInput' value={newPassword} placeholder="one more time" type={"password"} onChange={(e) => { setStatus(''); setNewPassword(e.target.value); }} />
+      <input className='flatInput' value={password} placeholder=" old password" type={"password"} onChange={(e) => { setStatus(''); setPassword(e.target.value); }} />
+      <input className='flatInput' value={newPassword} placeholder="and a new one" type={"password"} onChange={(e) => { setStatus(''); setNewPassword(e.target.value); }} />
 
 
       <button className='Button' style={{ fontSize: "15px", fontWeight: "bold" }} onClick={async () => {
