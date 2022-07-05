@@ -159,6 +159,9 @@ export class NAUTH_Connector {
 
     public async REST_createUser(username: string, email: string, password: string): Promise<{ status: "error" | "success", error: string }> {
 
+        username = username.toLowerCase().trim();
+        email = email.toLowerCase().trim();
+        password = password.trim();
 
         let res = await axios.get(`${this.api}/register?email=${email}&username=${username}&password=${password}`);
         if (res.data.status === "success") {
@@ -170,17 +173,18 @@ export class NAUTH_Connector {
     }
 
     public async REST_resendEmailVerification(email: string): Promise<{ status: "error" | "success", error: string, time?: number }> {
+        email = email.toLowerCase().trim();
         let res = await axios.get(`${this.api}/resendVerificationEmail?email=${email}`);
         return res.data;
     }
 
     public async REST_Login(username: string, password: string): Promise<{ status: "error" | "success", error: string }> {
+        username = username.toLowerCase().trim();
+        password = password.trim();
 
         let res = await axios.get(`${this.api}/Login?username=${username}&password=${password}`);
-
-        if (res.data.status === "success") {
+        if (res.data.status === "success")
             this.socketAuth(res.data.token);
-        }
 
         return res.data;
     }
@@ -194,14 +198,21 @@ export class NAUTH_Connector {
     }
 
     public async REST_DeleteUser(password: string): Promise<{ status: "error" | "success", error: string }> {
+        password = password.trim();
         return (await axios.get(`${this.api}/private/deleteUser?password=${password}&token=${this.getToken()}`)).data;
     }
 
     public async REST_ChangePasword(oldPassword: string, newPassword: string): Promise<{ status: "error" | "success", error: string }> {
+
+        oldPassword = oldPassword.trim();
+        newPassword = newPassword.trim();
+
         return (await axios.get(`${this.api}/private/changePassword?oldPassword=${oldPassword}&newPassword=${newPassword}&token=${this.getToken()}`)).data;
     }
 
     public async REST_RequestPasswordReset(username: string): Promise<{ status: "error" | "success", error: string }> {
+
+        username = username.toLowerCase().trim();
 
         console.log("requesting password reset");
 
@@ -223,6 +234,9 @@ export class NAUTH_Connector {
     }
 
     public async REST_ResetPassword(token: string, password: string, logMeIn: boolean): Promise<{ status: "error" | "success", error: string }> {
+
+        password = password.trim();
+
         return (await axios.get(`${this.api}/resetPassword?token=${token}&password=${password}&login=${logMeIn}`)).data;
     }
 
@@ -234,7 +248,7 @@ export class NAUTH_Connector {
         if (!this.getToken()) {
             this.w_status = false;
             this.waitPasswordReset();
-            return; 
+            return;
         }
 
         this.w_status = true;
