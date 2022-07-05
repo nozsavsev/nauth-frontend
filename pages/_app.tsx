@@ -114,7 +114,7 @@ export class NAUTH_Connector {
     private w_status: boolean = false;
     private w_type: "emailVeref" | "restoringSession" | "awaitingPasswordReset" = "restoringSession";
 
-    private getToken(): string { return cookie.load('NAUTH_AUTHENTICATION_TOKEN') || null; }
+    public getToken(): string { return cookie.load('NAUTH_AUTHENTICATION_TOKEN') || null; }
     private setToken(value: string) {
         if (value)
             cookie.save('NAUTH_AUTHENTICATION_TOKEN', value, { path: '/', maxAge: 987987987 });
