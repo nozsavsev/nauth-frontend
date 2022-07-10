@@ -20,14 +20,14 @@ import passwordChanged_lottie from "/public/lottie/passwordChanged.json";
 
 
 const NAUTH_Component = observer(({ NAUTH }: { NAUTH: NAUTH_Connector }) => {
-    
+
     const router = useRouter();
-    
-    
+
+
 
     useEffect(() => {
         NAUTH.initialize_connection();
-    },[router.pathname]);
+    }, [router.pathname]);
 
     const [Login_, setLogin_] = useState(false)
     const [userDeleted, setUserDeleted] = useState(false)
@@ -40,10 +40,9 @@ const NAUTH_Component = observer(({ NAUTH }: { NAUTH: NAUTH_Connector }) => {
         NAUTH.userDisabled.addListner(() => { console.log('disabled'); setUserDisabled(true); })
     }, [])
 
-    if (NAUTH.AuthStatus || NAUTH.PassedFirstChecks === false )
+    if (NAUTH.AuthStatus || NAUTH.PassedFirstChecks === false)
         return <div />
     else {
-
         if (userDisabled)
             return <div className="container center" style={{ flexDirection: "row" }}>
 
@@ -178,9 +177,12 @@ const NAUTH_Component = observer(({ NAUTH }: { NAUTH: NAUTH_Connector }) => {
                     }}>
                         <img src="https://nauth.nozsa.com/LogoBlack.svg" style={{ flex: 0, width: "90%", marginBottom: "10px", objectFit: "contain" }} />
                         <div style={{ minHeight: "1em", fontSize: "1em", fontWeight: "bolder", maxWidth: "15em", wordBreak: "break-word", margin: "0.2em" }}>
-                            Email verification {NAUTH.CurrentUser.email}
+                            Email verification {NAUTH?.CurrentUser?.email}
                         </div>
                         <Lottie animationData={email} play={true} loop={true} />
+
+                        <button className="Button" onClick={async () => { console.log(await NAUTH.REST_resendEmailVerification(NAUTH?.CurrentUser?.email)) }} style={{ width: "100%" }}>Resend email</button>
+
                     </div>
                 </div>
             else if (NAUTH.wType === "awaitingPasswordReset")

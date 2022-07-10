@@ -189,7 +189,6 @@ export class NAUTH_Connector {
 
         let res = await axios.get(`${NAUTH_Connector.api}/Login?username=${username}&password=${password}`);
 
-        console.log("user disabled");
         if (res.data.status === "error" && res.data.error === "user disabled") {
             this.w_status = false;
             this.authStatus = false;
@@ -420,7 +419,7 @@ export class NAUTH_Connector {
         this.passedFirstChecks = true;
         this.authError.emit();
     }
-    
+
     private on_sessionExpired(data: { sessionId: string }) {
         this.user = { ...this.user, sessions: [...this.user?.sessions.filter(s => s.id !== data.sessionId)] };
         this.sessionExpired.emit(data.sessionId);
@@ -443,14 +442,14 @@ export class NAUTH_Connector {
         this.user = null;
         this.session = null;
         this.setToken(null);
-        
+
         console.log(data?.reason)
 
         if (data?.reason === "passwordChanged")
             this.passwordChanged.emit();
         else if (data?.reason === "userDeleted")
             this.userDeleted.emit();
-        else if (data?.reason === "user disabled")
+        else if (data?.reason === "userDisabled")
             this.userDisabled.emit();
         else
             this.sessionRevoked.emit();
@@ -461,7 +460,7 @@ export class NAUTH_Connector {
     private on_emailVerification(data: { user: nauth.client.user }) {
         this.user = data.user;
         this.authStatus = false;
-
+        this.passedFirstChecks = true;
         this.w_status = true;
         this.w_type = "emailVeref";
     }
