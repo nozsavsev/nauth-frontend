@@ -59,7 +59,7 @@ export default function MyApp({ Component, pageProps }) {
 
 
 
-namespace nauth {
+export namespace nauth {
     export namespace client {
 
         export interface user {
@@ -70,6 +70,8 @@ namespace nauth {
 
             emailVerified: Boolean
             systemAdmin: Boolean
+
+            enabled: Boolean
 
             sessions: session[]
         }
@@ -216,6 +218,12 @@ export class NAUTH_Connector {
         password = password.trim();
         return (await axios.get(`${NAUTH_Connector.api}/private/deleteUser?password=${password}&token=${this.getToken()}`)).data;
     }
+
+    public async REST_GetUsers(skip: number, take: number): Promise<{ status: "error" | "success", error: string, users?: nauth.client.user[] }> {
+
+        return (await axios.get(`${NAUTH_Connector.api}/private/admin/getUsers?token=${this.getToken()}&skip=${skip}&take=${take}`)).data;
+    }
+
 
     public async REST_ChangePasword(oldPassword: string, newPassword: string): Promise<{ status: "error" | "success", error: string }> {
 

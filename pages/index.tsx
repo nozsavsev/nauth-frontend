@@ -22,13 +22,27 @@ const IndexPage = observer(
     return (
       <div className="container center" style={{ flexDirection: "column" }}>
 
+        <div style={{ padding: "10px", margin: "10px", background: "black", color: "white", display: "flex",alignItems:"center", flexDirection: "row", borderRadius: "10px" }}>
+
+          <div style={{ color: "#bbb", marginRight: "10px" }}>
+            logged in as
+          </div>
+          <div>
+            {NAUTH?.CurrentUser?.username}
+          </div>
+          {NAUTH?.CurrentUser?.systemAdmin ? <div style={{ marginLeft:"10px",padding:"4px 7px 4px 7px",background: "white", color: "black", borderRadius: "5px" }}>
+            admin
+          </div> : <div />}
+
+        </div>
+
         <div style={{ display: "flex" }}>
           <DeleteUser NAUTH={NAUTH} />
           <ChangePassword NAUTH={NAUTH} />
         </div>
         <SessionManager NAUTH={NAUTH} />
 
-        <NAUTH_Component NAUTH={NAUTH} />
+        <NAUTH_Component silent={false} requireAdmin={false} NAUTH={NAUTH} />
 
       </div>
     )

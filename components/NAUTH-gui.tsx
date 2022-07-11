@@ -19,11 +19,9 @@ import error from "/public/lottie/error.json";
 import passwordChanged_lottie from "/public/lottie/passwordChanged.json";
 
 
-const NAUTH_Component = observer(({ NAUTH }: { NAUTH: NAUTH_Connector }) => {
+const NAUTH_Component = observer(({ NAUTH, requireAdmin, silent }: { NAUTH: NAUTH_Connector, requireAdmin: boolean, silent: boolean }) => {
 
     const router = useRouter();
-
-
 
     useEffect(() => {
         NAUTH.initialize_connection();
@@ -40,8 +38,43 @@ const NAUTH_Component = observer(({ NAUTH }: { NAUTH: NAUTH_Connector }) => {
         NAUTH.userDisabled.addListner(() => { console.log('disabled'); setUserDisabled(true); })
     }, [])
 
-    if (NAUTH.AuthStatus || NAUTH.PassedFirstChecks === false)
-        return <div />
+
+
+    if (NAUTH.AuthStatus || (NAUTH.PassedFirstChecks === false && silent)) {
+        if (requireAdmin && !NAUTH.CurrentUser?.systemAdmin && NAUTH.PassedFirstChecks) {
+            return <div className="container center" style={{ flexDirection: "row" }}>
+
+                <div style={{
+                    margin: "20px",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    padding: "1em",
+                    borderRadius: "0.5em",
+                    boxShadow: "0px 0px 20px 1px #ccc",
+                    maxWidth: "10em",
+                }}>
+
+                    <img src="https://nauth.nozsa.com/LogoBlack.svg" style={{ flex: 0, width: "90%", marginBottom: "10px", objectFit: "contain" }} />
+
+                    <div style={{ minHeight: "1em", fontSize: "1em", maxWidth: "15em", wordBreak: "break-word", margin: "0.2em" }}>
+                        Admin required
+                    </div>
+
+                    <Lottie animationData={error} play={true} loop={false} />
+
+                    <button className="Button" onClick={() => { NAUTH.REST_RevokeSession(null) }} style={{ width: "100%" }}>Relogin</button>
+
+                </div>
+
+            </div>
+
+
+        }
+        else
+            return <div />
+    }
     else {
         if (userDisabled)
             return <div className="container center" style={{ flexDirection: "row" }}>
