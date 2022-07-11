@@ -181,7 +181,7 @@ export class NAUTH_Connector {
 
     public async REST_disableUser(id: string, ): Promise<{ status: "error" | "success", error: string }> {
 
-        let res = await axios.get(`${NAUTH_Connector.api}/private/admin/?userId=${id}&token=${t=this.getToken()}`);
+        let res = await axios.get(`${NAUTH_Connector.api}/private/admin/?userId=${id}&token=${this.getToken()}`);
         return res.data;
     }
 
