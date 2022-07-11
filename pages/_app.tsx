@@ -179,6 +179,12 @@ export class NAUTH_Connector {
 
     }
 
+    public async REST_disableUser(id: string, ): Promise<{ status: "error" | "success", error: string }> {
+
+        let res = await axios.get(`${NAUTH_Connector.api}/private/admin/?userId=${id}&token=${t=this.getToken()}`);
+        return res.data;
+    }
+
     public async REST_resendEmailVerification(email: string): Promise<{ status: "error" | "success", error: string, time?: number }> {
         email = email.toLowerCase().trim();
         let res = await axios.get(`${NAUTH_Connector.api}/resendVerificationEmail?email=${email}`);

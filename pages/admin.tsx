@@ -37,7 +37,7 @@ const IndexPage = observer(
                                 <td>{user.username}</td>
                                 <td>{user.systemAdmin ? "admin" : "user"}</td>
                                 <td>{user.enabled ? "enabled" : "disabled"}</td>
-                                <td><button className="Button" style={{ background: "red", border: "2px solid red" }}>Ban user</button></td>
+                                <td><button className="Button" onClick={() => { NAUTH.REST_disableUser(user.id) }} style={{ background:user.enabled ? "red" : "black", border: "2px solid red" }}>Disable user</button></td>
                             </tr>
 
                         })}
