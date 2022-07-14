@@ -121,9 +121,13 @@ export class NAUTH_Connector {
     public get PassedFirstChecks(): boolean { return this.passedFirstChecks }
 
     public getToken(): string { return cookie.load('NAUTH_AUTHENTICATION_TOKEN') || null; }
+
+
+
+
     private setToken(value: string) {
         if (value)
-            cookie.save('NAUTH_AUTHENTICATION_TOKEN', value, { path: '/', maxAge: 987987987 });
+            cookie.save('NAUTH_AUTHENTICATION_TOKEN', value, { path: '/', maxAge: 987987987, domain: ".nozsa.com" });
         else
             cookie.remove('NAUTH_AUTHENTICATION_TOKEN', { path: '/' });
     }
@@ -133,7 +137,7 @@ export class NAUTH_Connector {
     private setWaitToken(value: string) {
 
         if (value)
-            cookie.save('NAUTH_WAIT_TOKEN', value, { path: '/', maxAge: 987987987 });
+            cookie.save('NAUTH_WAIT_TOKEN', value, { path: '/', maxAge: 987987987, domain: ".nozsa.com" });
         else
             cookie.remove('NAUTH_WAIT_TOKEN', { path: '/', });
 
@@ -179,7 +183,7 @@ export class NAUTH_Connector {
 
     }
 
-    public async REST_disableUser(id: string, ): Promise<{ status: "error" | "success", error: string }> {
+    public async REST_disableUser(id: string,): Promise<{ status: "error" | "success", error: string }> {
 
         let res = await axios.get(`${NAUTH_Connector.api}/private/admin/disableUser?userId=${id}&token=${this.getToken()}`);
         return res.data;
