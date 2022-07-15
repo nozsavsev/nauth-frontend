@@ -127,7 +127,7 @@ export class NAUTH_Connector {
 
     private setToken(value: string) {
         if (value)
-            cookie.save('NAUTH_AUTHENTICATION_TOKEN', value, { path: '/', maxAge: 987987987, domain: ".nozsa.com" });
+            cookie.save('NAUTH_AUTHENTICATION_TOKEN', value, { path: '/', maxAge: 987987987, domain: dev ? "" : ".nozsa.com" });
         else
             cookie.remove('NAUTH_AUTHENTICATION_TOKEN', { path: '/' });
     }
@@ -137,7 +137,7 @@ export class NAUTH_Connector {
     private setWaitToken(value: string) {
 
         if (value)
-            cookie.save('NAUTH_WAIT_TOKEN', value, { path: '/', maxAge: 987987987, domain: ".nozsa.com" });
+            cookie.save('NAUTH_WAIT_TOKEN', value, { path: '/', maxAge: 987987987, domain: dev ? "" : ".nozsa.com" });
         else
             cookie.remove('NAUTH_WAIT_TOKEN', { path: '/', });
 
