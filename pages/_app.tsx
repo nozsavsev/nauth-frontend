@@ -121,10 +121,6 @@ export class NAUTH_Connector {
     public get PassedFirstChecks(): boolean { return this.passedFirstChecks }
 
     public getToken(): string { return cookie.load('NAUTH_AUTHENTICATION_TOKEN') || null; }
-
-
-
-
     private setToken(value: string) {
         if (value)
             cookie.save('NAUTH_AUTHENTICATION_TOKEN', value, { path: '/', maxAge: 987987987, domain: dev ? "" : ".nozsa.com" });
