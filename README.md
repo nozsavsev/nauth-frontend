@@ -1,40 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# NAUTH - Frontend
+
+A modern, secure, and feature-rich authentication and authorization microservice designed to be the backbone of nozsa.com security.
+
+This is the frontend for the NAUTH service, built with Next.js and TypeScript.
+
+## Features
+
+- **Core Authentication**: Robust and secure authentication suite, featuring Two-Factor Authentication (2FA), seamless Google Login integration, and passwordless login with temporary codes. User credentials are protected using the strong Argon2id hashing algorithm.
+- **Advanced Session Management**: All sessions are validated against the database for enhanced security, with the ability to instantly revoke any session in real-time.
+- **Authorization & Permissions**: A flexible and powerful permission system allows for fine-grained access control. Nauth offers centralized permission management and can authenticate other applications on the same domain, storing and managing permissions across all services.
+- **Comprehensive User Management**: Administrators have access to a comprehensive set of tools to effectively manage users, including the ability to delete accounts, set passwords, and trigger critical email actions like verification and password resets.
+- **Customizable Transactional Emails**: Nauth includes a built-in email template system for all transactional emails. Anyone with the right permissions can customize templates for various actions, ensuring consistent branding and communication.
+- **Extensible Service Integration**: Designed for extensibility, Nauth allows authorized users (admins only) to register other applications on the domain to use nauth as an authentication system. These services can then register their own permissions in real-time.
 
 ## Getting Started
 
-First, run the development server:
+First, install the dependencies:
 
 ```bash
-npm run dev
-# or
+yarn install
+```
+
+Then, run the development server:
+
+```bash
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+Note: The development server runs with `NODE_TLS_REJECT_UNAUTHORIZED=0` to allow self-signed certificates.
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+## Available Scripts
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+In the project directory, you can run:
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### `yarn dev`
 
-## Learn More
+Runs the app in the development mode.
+Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
-To learn more about Next.js, take a look at the following resources:
+The page will reload if you make edits.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
+### `yarn build`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Builds the app for production to the `.next` folder.
+It correctly bundles React in production mode and optimizes the build for the best performance.
 
-## Deploy on Vercel
+### `yarn start`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Starts the application in production mode. The application should be compiled with `yarn build` first.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+### `yarn lint`
+
+Checks the code for formatting and linting issues using Biome.
+
+### `yarn format`
+
+Formats the code using Biome.

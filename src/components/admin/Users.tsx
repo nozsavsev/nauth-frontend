@@ -29,7 +29,9 @@ export const UsersAdminTab = ({ _users, _permissions }: { _users: UserDTO[]; _pe
   const [emptySearchResults, setEmptySearchResults] = useState<boolean>(false);
   const [hasMore, setHasMore] = useState<boolean>(true);
 
-  const { permissions, refresh } = usePermissions({ initialPermissions: _permissions });
+  const { permissions, refresh } = usePermissions({
+    initialPermissions: _permissions,
+  });
 
   return (
     <>
@@ -146,7 +148,9 @@ const UserDropdownMenu = ({
               onClose={() => {
                 if (!touched) setIsOpen(false);
                 else {
-                  toast.warning("Save or discard changes first!", { autoClose: 500 });
+                  toast.warning("Save or discard changes first!", {
+                    autoClose: 500,
+                  });
                   shake();
                 }
               }}
@@ -212,7 +216,10 @@ const UserDropdownMenu = ({
                                   services: undefined,
                                   twoFactorAuthEntries: undefined,
                                   permissions: localUser.permissions?.map((p) => {
-                                    return { ...p, permission: null as any };
+                                    return {
+                                      ...p,
+                                      permission: null as any,
+                                    };
                                   }),
                                 },
                               });
@@ -334,20 +341,46 @@ const UserDropdownMenu = ({
                       if (user?.isEmailVerified) {
                         const toastId = toast.loading("Invalidating email...");
 
-                        await API.Client.UserManagement.ForceUnVerifyEmail({ id: user.id! }).then((res) => {
+                        await API.Client.UserManagement.ForceUnVerifyEmail({
+                          id: user.id!,
+                        }).then((res) => {
                           if (res.status === "Ok") {
-                            toast.update(toastId, { type: "success", render: "Email invalidated", isLoading: false, autoClose: 1000 });
+                            toast.update(toastId, {
+                              type: "success",
+                              render: "Email invalidated",
+                              isLoading: false,
+                              autoClose: 1000,
+                            });
                             refetch();
-                          } else toast.update(toastId, { type: "error", render: "Something went wrong", isLoading: false, autoClose: 4000 });
+                          } else
+                            toast.update(toastId, {
+                              type: "error",
+                              render: "Something went wrong",
+                              isLoading: false,
+                              autoClose: 4000,
+                            });
                         });
                       } else {
                         const toastId = toast.loading("Force verifing email...");
 
-                        await API.Client.UserManagement.ForceVerifyEmail({ id: user.id! }).then((res) => {
+                        await API.Client.UserManagement.ForceVerifyEmail({
+                          id: user.id!,
+                        }).then((res) => {
                           if (res.status === "Ok") {
-                            toast.update(toastId, { type: "success", render: "Force verified email", isLoading: false, autoClose: 1000 });
+                            toast.update(toastId, {
+                              type: "success",
+                              render: "Force verified email",
+                              isLoading: false,
+                              autoClose: 1000,
+                            });
                             refetch();
-                          } else toast.update(toastId, { type: "error", render: "Something went wrong", isLoading: false, autoClose: 4000 });
+                          } else
+                            toast.update(toastId, {
+                              type: "error",
+                              render: "Something went wrong",
+                              isLoading: false,
+                              autoClose: 4000,
+                            });
                         });
                       }
                     }}
@@ -385,20 +418,46 @@ const UserDropdownMenu = ({
                       if (!user.isEnabled) {
                         const toastId = toast.loading("Unbanning user...");
 
-                        await API.Client.UserManagement.EnableUser({ id: user.id! }).then((res) => {
+                        await API.Client.UserManagement.EnableUser({
+                          id: user.id!,
+                        }).then((res) => {
                           if (res.status === "Ok") {
-                            toast.update(toastId, { type: "success", render: "Used unbanned", isLoading: false, autoClose: 1000 });
+                            toast.update(toastId, {
+                              type: "success",
+                              render: "Used unbanned",
+                              isLoading: false,
+                              autoClose: 1000,
+                            });
                             refetch();
-                          } else toast.update(toastId, { type: "error", render: "Something went wrong", isLoading: false, autoClose: 4000 });
+                          } else
+                            toast.update(toastId, {
+                              type: "error",
+                              render: "Something went wrong",
+                              isLoading: false,
+                              autoClose: 4000,
+                            });
                         });
                       } else {
                         const toastId = toast.loading("Banning user...");
 
-                        await API.Client.UserManagement.DisableUser({ id: user.id! }).then((res) => {
+                        await API.Client.UserManagement.DisableUser({
+                          id: user.id!,
+                        }).then((res) => {
                           if (res.status === "Ok") {
-                            toast.update(toastId, { type: "success", render: "User banned", isLoading: false, autoClose: 1000 });
+                            toast.update(toastId, {
+                              type: "success",
+                              render: "User banned",
+                              isLoading: false,
+                              autoClose: 1000,
+                            });
                             refetch();
-                          } else toast.update(toastId, { type: "error", render: "Something went wrong", isLoading: false, autoClose: 4000 });
+                          } else
+                            toast.update(toastId, {
+                              type: "error",
+                              render: "Something went wrong",
+                              isLoading: false,
+                              autoClose: 4000,
+                            });
                         });
                       }
                     }}
@@ -448,7 +507,9 @@ const UserDropdownMenu = ({
                 <div className="mt-8 flex justify-between">
                   <button
                     onClick={() => {
-                      API.Client.UserManagement.DeleteUser({ id: user.id! }).then((res) => {
+                      API.Client.UserManagement.DeleteUser({
+                        id: user.id!,
+                      }).then((res) => {
                         if (res.status === "Ok") {
                           toast.success("User deleted");
                           refetch();
@@ -472,7 +533,9 @@ const UserDropdownMenu = ({
                 {({ active }) => (
                   <button
                     onClick={async () => {
-                      await API.Client.UserManagement.PasswordResetRequest({ userId: user.id! }).then((res) => {
+                      await API.Client.UserManagement.PasswordResetRequest({
+                        userId: user.id!,
+                      }).then((res) => {
                         if (res.status === "Ok") {
                           toast.success("Password reset email sent");
                         } else toast.error("Something went wrong, please wait about 2 minutes");
@@ -495,7 +558,9 @@ const UserDropdownMenu = ({
                 {({ active }) => (
                   <button
                     onClick={async () => {
-                      await API.Client.UserManagement.VerifyEmailRequest({ userId: user.id! }).then((res) => {
+                      await API.Client.UserManagement.VerifyEmailRequest({
+                        userId: user.id!,
+                      }).then((res) => {
                         if (res.status === "Ok") {
                           toast.success("Email verification link sent");
                         } else toast.error("Something went wrong, please wait about 2 minutes");
@@ -518,7 +583,9 @@ const UserDropdownMenu = ({
                 {({ active }) => (
                   <button
                     onClick={async () => {
-                      await API.Client.UserManagement.DeleteAccountRequest({ userId: user.id! }).then((res) => {
+                      await API.Client.UserManagement.DeleteAccountRequest({
+                        userId: user.id!,
+                      }).then((res) => {
                         if (res.status === "Ok") {
                           toast.success("Account removal link sent");
                         } else toast.error("Something went wrong, please wait about 2 minutes");
@@ -659,7 +726,11 @@ function UserQuickTags({ user }: { user: UserDTO }) {
             name: `${user.permissions?.filter((p) => p.permission?.serviceId === "0").length} admin permissions`,
             type: "warning",
           },
-        ] as { name: string; type: "danger" | "pleasing" | "warning"; icon: any }[]
+        ] as {
+          name: string;
+          type: "danger" | "pleasing" | "warning";
+          icon: any;
+        }[]
       )
         .filter((t) => t)
         .map((t, i) => (

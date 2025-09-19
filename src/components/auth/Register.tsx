@@ -33,7 +33,9 @@ export const Register = () => {
           theme="outline"
           shape="circle"
           onSuccess={async (credentialResponse) => {
-            await API.Client.User.ContinueWithGoogle({ googleAccessToken: credentialResponse.credential }).then(async (res) => {
+            await API.Client.User.ContinueWithGoogle({
+              googleAccessToken: credentialResponse.credential,
+            }).then(async (res) => {
               console.log(res);
               if (res.status == "Ok") {
                 await refresh();

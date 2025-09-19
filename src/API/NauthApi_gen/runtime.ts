@@ -299,7 +299,12 @@ export type HTTPQuery = {
   [key: string]: string | number | null | boolean | Array<string | number | null | boolean> | Set<string | number | null | boolean> | HTTPQuery;
 };
 export type HTTPBody = Json | FormData | URLSearchParams;
-export type HTTPRequestInit = { headers?: HTTPHeaders; method: HTTPMethod; credentials?: RequestCredentials; body?: HTTPBody };
+export type HTTPRequestInit = {
+  headers?: HTTPHeaders;
+  method: HTTPMethod;
+  credentials?: RequestCredentials;
+  body?: HTTPBody;
+};
 export type ModelPropertyNaming = "camelCase" | "snake_case" | "PascalCase" | "original";
 
 export type InitOverrideFunction = (requestContext: { init: HTTPRequestInit; context: RequestOpts }) => Promise<RequestInit>;

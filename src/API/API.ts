@@ -24,7 +24,7 @@ export type ClientConfigENV = {
 
 class ClientConfig {
   public static basePath = "http://localhost:5035";
-  public static basePathSSR = "http://localhost:5035";
+  public static basePathSSR = process.env.API_BASE_SSR;
   public static basePathRealtime = "http://localhost:5035/authHub";
 }
 

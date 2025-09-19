@@ -15,7 +15,9 @@ export const EditEmailTemplateAdminTab = ({ _template }: { _template: EmailTempl
 
   const handleSave = async () => {
     setIsSaving(true);
-    const res = await API.Client.EmailTemplates.Update({ emailTemplateDTO: template });
+    const res = await API.Client.EmailTemplates.Update({
+      emailTemplateDTO: template,
+    });
     if (res.status === "Ok") {
       toast.success("Template saved successfully");
     } else {
@@ -48,7 +50,12 @@ export const EditEmailTemplateAdminTab = ({ _template }: { _template: EmailTempl
           <Label>Type</Label>
           <select
             value={template.type}
-            onChange={(e) => setTemplate({ ...template, type: e.target.value as EmailTemplateType })}
+            onChange={(e) =>
+              setTemplate({
+                ...template,
+                type: e.target.value as EmailTemplateType,
+              })
+            }
             className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
           >
             {Object.values(EmailTemplateType).map((type) => (

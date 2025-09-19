@@ -20,7 +20,9 @@ const TemplateTypeColors: { [key in EmailTemplateType]: string } = {
 };
 
 export const EmailTemplatesAdminTab = ({ _templates }: { _templates: EmailTemplateDTO[] }) => {
-  const { emailTemplates, refresh } = useEmailTemplates({ initialEmailTemplates: _templates });
+  const { emailTemplates, refresh } = useEmailTemplates({
+    initialEmailTemplates: _templates,
+  });
 
   const groupedTemplates = emailTemplates.reduce(
     (acc, template) => {

@@ -11,7 +11,9 @@ import { Input } from "../ui/input";
 
 export default function EditService({ _service }: { _service: ServiceDTO }) {
   const { service, refresh } = useService({ initialService: _service });
-  const { permissions } = usePermissions({ initialPermissions: service?.permissions ?? null });
+  const { permissions } = usePermissions({
+    initialPermissions: service?.permissions ?? null,
+  });
 
   function getPermissionName(permissionKey: string) {
     return permissions.find((p) => p.key === permissionKey || p.id === permissionKey)?.name?.replaceAll("Pr", "") ?? "";
@@ -32,7 +34,10 @@ export default function EditService({ _service }: { _service: ServiceDTO }) {
             disabled={service?.id === "0"}
             onClick={async () => {
               if (localService) {
-                const res = await API.Client.Service.Update({ id: localService.id!, name: localService.name! });
+                const res = await API.Client.Service.Update({
+                  id: localService.id!,
+                  name: localService.name!,
+                });
                 if (res.status === "Ok") {
                   toast.success("Service updated");
                   refresh();
@@ -93,7 +98,9 @@ export default function EditService({ _service }: { _service: ServiceDTO }) {
           <Button
             variant={"ghost"}
             onClick={() => {
-              API.Client.Service.GetSession({ serviceId: service?.id ?? "" }).then((res) => {
+              API.Client.Service.GetSession({
+                serviceId: service?.id ?? "",
+              }).then((res) => {
                 if (res.status === "Ok") {
                   console.log(res);
                   toast.success("Session created");
@@ -134,7 +141,9 @@ export default function EditService({ _service }: { _service: ServiceDTO }) {
                   <Button
                     variant={"destructive"}
                     onClick={() => {
-                      API.Client.Session.Revoke({ sessionId: session.id ?? "" }).then((res) => {
+                      API.Client.Session.Revoke({
+                        sessionId: session.id ?? "",
+                      }).then((res) => {
                         if (res.status === "Ok") {
                           toast.success("Session revoked");
                           refresh();
