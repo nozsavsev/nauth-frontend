@@ -1,0 +1,83 @@
+export const SecurityDescriptor: SecurityDescriptorType = {
+  "/": [],
+  "/403": [],
+  "/404": [],
+  "/500": [],
+  "/account": ["AnyAuthenticated"],
+  "/account/email-actions": ["AnyAuthenticated"],
+  "/account/personal-info": ["AnyAuthenticated"],
+  "/account/security": ["AnyAuthenticated"],
+  "/account/[tab_name]": ["AnyAuthenticated"],
+  "/admin": ["AnyAdmin"],
+  "/admin/email_templates": ["PrManageEmailTemplates"],
+  "/admin/email_templates/[templateId]": [],
+  "/admin/global_services": ["PrManageServices"],
+  "/admin/global_services/[serviceId]": ["PrManageServices"],
+  "/admin/services": ["PrManageOwnServices"],
+  "/admin/services/[serviceId]": ["PrManageOwnServices"],
+  "/admin/users": ["PrManageUsers"],
+  "/api": [],
+  "/auth": [],
+  "/auth/2FA": [],
+  "/auth/2FA/recovery": [],
+  "/auth/changeEmail": [],
+  "/auth/deleteAccount": [],
+  "/auth/deleted": [],
+  "/auth/disabledUser": [],
+  "/auth/forgotPassword": [],
+  "/auth/login": [],
+  "/auth/register": [],
+  "/auth/resetPassword": [],
+  "/auth/revoked": [],
+  "/auth/verificationExplainer": ["AnyAuthenticated"],
+  "/auth/verifyEmail": [],
+  "/auth/verifyEmailRequest": ["AnyAuthenticated"],
+  "/_app": [],
+};
+export type NauthPaths =
+  | "/"
+  | "/403"
+  | "/404"
+  | "/500"
+  | "/account"
+  | "/account/email-actions"
+  | "/account/personal-info"
+  | "/account/security"
+  | "/account/[tab_name]"
+  | "/admin"
+  | "/admin/email_templates"
+  | "/admin/email_templates/[templateId]"
+  | "/admin/global_services"
+  | "/admin/global_services/[serviceId]"
+  | "/admin/services"
+  | "/admin/services/[serviceId]"
+  | "/admin/users"
+  | "/api"
+  | "/auth"
+  | "/auth/2FA"
+  | "/auth/2FA/recovery"
+  | "/auth/changeEmail"
+  | "/auth/deleteAccount"
+  | "/auth/deleted"
+  | "/auth/disabledUser"
+  | "/auth/forgotPassword"
+  | "/auth/login"
+  | "/auth/register"
+  | "/auth/resetPassword"
+  | "/auth/revoked"
+  | "/auth/verificationExplainer"
+  | "/auth/verifyEmail"
+  | "/auth/verifyEmailRequest"
+  | "/_app";
+
+export type PageAccessRuleType =
+  | "AnyAdmin"
+  | "AnyAuthenticated"
+  | "RequireVerifiedEmail"
+  | "PrAdmin"
+  | "PrManageUsers"
+  | "PrManageOwnServices"
+  | "PrManageServices"
+  | "PrManageEmailTemplates";
+
+export type SecurityDescriptorType = { [K in NauthPaths]: PageAccessRuleType[] };
