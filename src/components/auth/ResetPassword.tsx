@@ -21,15 +21,21 @@ const statusMessages = {
 
 export const ResetPassword = () => {
   const router = useRouter();
-  const { user } = useUser();
+  const { user, isLoading } = useUser();
   const [userEmail, setUserEmail] = useState<string>("");
   const [status, setStatus] = useState(statusMessages.loading);
   const [emailActionId, setEmailActionId] = useState<string | undefined>();
+  const [isTokenVerified, setIsTokenVerified] = useState(false);
 
   useEffect(() => {
+    if (isLoading || isTokenVerified) {
+      return;
+    }
+
     (async () => {
       if (user == null) {
         if (router.query.token) {
+          setIsTokenVerified(true);
           let res = await API.Client.EmailActions.DecodeToken({
             token: router?.query?.token?.toString(),
           });
@@ -49,7 +55,7 @@ export const ResetPassword = () => {
         }
       }
     })();
-  }, [router?.query?.token, user]);
+  }, [router?.query?.token, user, isLoading, isTokenVerified]);
 
   const onCancel = async () => {
     if (emailActionId) {

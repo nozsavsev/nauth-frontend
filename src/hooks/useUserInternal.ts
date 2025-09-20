@@ -22,7 +22,7 @@ export default function useUserInternal({ initialUser }: useUserInternalParams) 
       revalidateOnFocus: true,
       revalidateOnReconnect: true,
       dedupingInterval: 1000 * 5,
-      refreshInterval: 50000,
+      refreshInterval: 0,
       keepPreviousData: true,
     },
   );

@@ -16,8 +16,8 @@ import { ToastContainer } from "react-toastify";
 const dev = process.env.NODE_ENV !== "production";
 
 type PageProps = {
-  ssr_user: UserDTO | null;
-  securityPage?: boolean;
+  ssr_user: UserDTO | null | undefined;
+  securityPage?: boolean | undefined;
   clientConfig: ClientConfigENV;
 };
 
@@ -28,7 +28,7 @@ function ClientConfigHydrator(appProps: AppPropsWithSSRUser) {
   ClientConfig.basePath = clientConfig.API_BASE;
   ClientConfig.basePathSSR = clientConfig.API_BASE_SSR;
   ClientConfig.basePathRealtime = clientConfig.API_BASE_REALTIME;
-  return AlmostMyApp(appProps);
+  return <AlmostMyApp {...appProps} />;
 }
 
 const InnerApp = ({ Component, pageProps }: AppPropsWithSSRUser) => {
@@ -43,7 +43,7 @@ const InnerApp = ({ Component, pageProps }: AppPropsWithSSRUser) => {
     } else {
       realtime.disconnect();
     }
-  }, [user, realtime, refresh]);
+  }, [user?.id, realtime, refresh]);
 
   return (
     <Layout>
@@ -53,7 +53,7 @@ const InnerApp = ({ Component, pageProps }: AppPropsWithSSRUser) => {
 };
 
 const AlmostMyApp = (props: AppPropsWithSSRUser) => {
-  const user = useUserInternal({ initialUser: props.pageProps.ssr_user });
+  const user = useUserInternal({ initialUser: props.pageProps.ssr_user ?? null });
 
   useEffect(() => {
     // console.log("First render pageProps:", props.pageProps);
@@ -186,8 +186,8 @@ MyApp.getInitialProps = async (appContext: AppContext) => {
     };
   } else {
     let finalresponse: PageProps = {
-      ssr_user: null,
-      securityPage: appContext.ctx.pathname.includes("/account"),
+      ssr_user: undefined,
+      securityPage: undefined,
       clientConfig: {
         API_BASE: ClientConfig.basePath,
         API_BASE_SSR: ClientConfig.basePathSSR,
@@ -195,19 +195,12 @@ MyApp.getInitialProps = async (appContext: AppContext) => {
       } as ClientConfigENV,
     };
 
-    // Load user
-    {
-      const user_res = await API.Client.User.CurrentUser();
-
-      const user = user_res?.status === "Ok" ? user_res?.response : null;
-      finalresponse.ssr_user = user ?? null;
-    }
 
     return {
       ...appProps,
       pageProps: {
-        ...appProps.pageProps,
         ...finalresponse,
+        ...appProps.pageProps,
       },
     };
   }

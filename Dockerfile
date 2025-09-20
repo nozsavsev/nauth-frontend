@@ -20,14 +20,16 @@ RUN \
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
-COPY . .
+COPY package.json biome.json components.json next-env.d.ts next.config.ts postcss.config.mjs tailwindcss.config.js tsconfig.json ./
+COPY public ./public
+COPY src ./src
 
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry
 # Uncomment the following line in case you want to disable telemetry during the build.
 
 ENV NEXT_TELEMETRY_DISABLED 1
-RUN yarn build
+RUN --mount=type=cache,target=/app/.next/cache yarn build
 
 # If using npm comment out above and use below instead
 # RUN npm run build
