@@ -14,7 +14,7 @@ import { BrandedAuthWindow } from "./common/BrandedAuthWindow";
 
 const statusMessages = {
   loading: "Verifying token...",
-  success: "Token verified. Please enter your new password.",
+  success: "Please enter your new password.",
   error: "Error, please try again.",
   invalidToken: "Invalid or expired token.",
 };
@@ -28,34 +28,27 @@ export const ResetPassword = () => {
   const [isTokenVerified, setIsTokenVerified] = useState(false);
 
   useEffect(() => {
-    if (isLoading || isTokenVerified) {
-      return;
-    }
-
+    console.log(router.query.token);
     (async () => {
-      if (user == null) {
-        if (router.query.token) {
-          setIsTokenVerified(true);
-          let res = await API.Client.EmailActions.DecodeToken({
-            token: router?.query?.token?.toString(),
-          });
+      if (router.query.token) {
+        const res = await API.Client.EmailActions.DecodeToken({
+          token: router.query.token.toString(),
+        });
 
-          if (res.status == "Ok") {
-            let email = res?.response?.user?.email;
-            if (email) {
-              setUserEmail(email);
-              setEmailActionId(res.response?.id ?? "");
-              setStatus(statusMessages.success);
-            }
-          } else {
-            setStatus(statusMessages.invalidToken);
-          }
+        console.log(res);
+
+        if (res.status === "Ok" && res.response) {
+          setUserEmail(res.response.user?.email ?? "");
+          setEmailActionId(res.response.id ?? "");
+          setStatus(statusMessages.success);
         } else {
           setStatus(statusMessages.invalidToken);
         }
+      } else {
+        setStatus(statusMessages.invalidToken);
       }
     })();
-  }, [router?.query?.token, user, isLoading, isTokenVerified]);
+  }, [router.query.token]);
 
   const onCancel = async () => {
     if (emailActionId) {
