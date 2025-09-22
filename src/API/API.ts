@@ -133,9 +133,9 @@ export const ExecuteApiRequest = async <T extends (...args: any[]) => any>(
           console.log(payload);
 
           if (!window.location.pathname.includes("/auth/2FA") && payload?.authenticationFailureReasons?.includes("_2FARequired")) {
-            window.location.href = `/auth/2FA`;
+            window.location.href = `/auth/2FA?redirect=${window.location.pathname}`;
           } else if (!window.location.pathname.includes("/auth/") && payload?.authenticationFailureReasons?.includes("SessionExpired") == false) {
-            window.location.href = `/auth/verificationExplainer?required=${payload?.authenticationFailureReasons?.join(",")}`;
+            window.location.href = `/auth/verificationExplainer?required=${payload?.authenticationFailureReasons?.join(",")}&redirect=${window.location.pathname}`;
           }
         }
 

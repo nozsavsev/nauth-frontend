@@ -89,14 +89,14 @@ export async function middleware(request: NextRequest) {
 
     if (user_rsp?.authenticationFailureReasons?.includes("_2FARequired")) {
       if (!pathname.startsWith("/auth/2FA")) {
-        return NextResponse.redirect(new URL("/auth/2FA", request.url));
+        return NextResponse.redirect(new URL("/auth/2FA?redirect=" + pathname, request.url));
       } else {
         return NextResponse.next();
       }
     }
 
     if (pathname.startsWith("/auth/2FA") && !user_rsp.response) {
-      return NextResponse.redirect(new URL("/", request.url));
+      return NextResponse.redirect(new URL("/?redirect=" + pathname, request.url));
     }
 
     const user = user_rsp.response;
@@ -107,7 +107,7 @@ export async function middleware(request: NextRequest) {
       .filter((value, index, self) => self.indexOf(value) === index);
 
     if (permissonChecks.includes("loginRedirect")) {
-      return NextResponse.redirect(new URL("/auth/login", request.url));
+      return NextResponse.redirect(new URL("/auth/login?redirect=" + pathname, request.url));
     }
 
     if (permissonChecks.includes("forbidden")) {
@@ -122,7 +122,7 @@ export async function middleware(request: NextRequest) {
           .filter((r) => r.result !== "pass")
           .map((r) => r.permission);
 
-        return NextResponse.rewrite(new URL(`/auth/verificationExplainer?pageAccess=true&required=${failedPermissions?.join(",")}`, request.url));
+        return NextResponse.rewrite(new URL(`/auth/verificationExplainer?pageAccess=true&required=${failedPermissions?.join(",")}&redirect=${pathname}`, request.url));
       }
 
       return NextResponse.rewrite(new URL("/405", request.url));

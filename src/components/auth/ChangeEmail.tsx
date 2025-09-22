@@ -49,7 +49,15 @@ export const ChangeEmail = ({}: {}) => {
       });
       if (res.status === "Ok") {
         setStatus(statusMessages.success);
-        setTimeout(() => router.push("/account"), 2000);
+        setTimeout(() => {
+        
+          if (router.query.redirect) {
+            router.push(router.query.redirect.toString())
+          } else {
+            router.push("/account")
+          }
+        
+        }, 2000);
       } else {
         setStatus(statusMessages.error);
       }
@@ -63,7 +71,13 @@ export const ChangeEmail = ({}: {}) => {
       });
       if (res.status === "Ok") {
         toast.success("Email change cancelled.");
-        router.push("/account");
+        setTimeout(() => {
+          if (router.query.redirect) {
+            router.push(router.query.redirect.toString())
+          } else {
+            router.push("/account")
+          }
+        }, 2000);
       } else {
         toast.error("Error cancelling email change.");
       }

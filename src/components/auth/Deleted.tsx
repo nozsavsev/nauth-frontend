@@ -30,7 +30,7 @@ export const Deleted = () => {
       <div>Your account has been deleted.</div>
 
       <Button className="my-8 font-semibold" variant={"ghost"} asChild>
-        <Link href="/">Go home</Link>
+        <Link href={"/?redirect=" + router.query?.redirect?.toString()}>Go home</Link>
       </Button>
     </BrandedAuthWindow>
   );

@@ -18,7 +18,7 @@ export const ForgotPassword = () => {
     <BrandedAuthWindow>
       <InitialData
         onSuccess={() => {
-          // router.push('/', undefined, { shallow: false });
+          router.push('/', undefined, { shallow: false });
         }}
       />
     </BrandedAuthWindow>

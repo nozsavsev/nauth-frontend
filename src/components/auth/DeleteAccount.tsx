@@ -49,7 +49,13 @@ export const DeleteAccount = ({}: {}) => {
       });
       if (res.status === "Ok") {
         setStatus(statusMessages.success);
-        setTimeout(() => router.push("/"), 2000);
+        setTimeout(() => {
+          if (router.query.redirect) {
+            router.push(router.query.redirect.toString())
+          } else {
+            router.push("/")
+          }
+        }, 2000);
       } else {
         setStatus(statusMessages.error);
       }
@@ -63,7 +69,13 @@ export const DeleteAccount = ({}: {}) => {
       });
       if (res.status === "Ok") {
         toast.success("Account deletion cancelled.");
-        router.push("/account");
+        setTimeout(() => {
+          if (router.query.redirect) {
+            router.push(router.query.redirect.toString())
+          } else {
+            router.push("/account")
+          }
+        }, 2000);
       } else {
         toast.error("Error cancelling account deletion.");
       }

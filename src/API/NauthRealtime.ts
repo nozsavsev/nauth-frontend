@@ -32,12 +32,12 @@ export class NauthRealtime {
   @action public async onLogout() {
     console.log("onLogout");
     //@ts-ignore
-    if (!window.noLogoutRedirect) window.location.replace("/auth/revoked");
+    if (!window.noLogoutRedirect) window.location.replace("/auth/revoked?redirect=" + window.location.pathname);
   }
 
   @action public async onDeleted() {
     console.log("onDeleted");
-    window.location.replace("/auth/deleted");
+    window.location.replace("/auth/deleted?redirect=" + window.location.pathname);
   }
 
   @action public async onRefreshData() {

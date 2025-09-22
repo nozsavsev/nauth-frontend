@@ -17,7 +17,13 @@ export const VerifyEmailRequest = () => {
   useEffect(() => {
     if (user?.isEmailVerified) {
       toast.success("Email verified");
-      router.push("/");
+      setTimeout(() => {
+        if (router.query.redirect) {
+          router.push(router.query.redirect.toString())
+        } else {
+          router.push("/")
+        }
+      }, 2000);
     }
   }, [user]);
 
