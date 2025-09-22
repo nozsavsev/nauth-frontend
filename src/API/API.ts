@@ -133,14 +133,18 @@ export const ExecuteApiRequest = async <T extends (...args: any[]) => any>(
           console.log(payload);
 
           if (!window.location.pathname.includes("/auth/2FA") && payload?.authenticationFailureReasons?.includes("_2FARequired")) {
-            window.location.href = `/auth/2FA?redirect=${window.location.pathname}`;
+            const urlParams = new URLSearchParams(window.location.search);
+            const currentRedirect = urlParams.get('redirect') ?? window.location.pathname;
+            window.location.href = `/auth/2FA?redirect=${currentRedirect}`;
           } else if (!window.location.pathname.includes("/auth/") && payload?.authenticationFailureReasons?.includes("SessionExpired") == false) {
             window.location.href = `/auth/verificationExplainer?required=${payload?.authenticationFailureReasons?.join(",")}&redirect=${window.location.pathname}`;
           }
         }
 
         if (payload.status === "ServerDown" && !window.location.pathname.includes("/500")) {
-          window.location.href = "/500?redirect=" + window.location.pathname;
+          const urlParams = new URLSearchParams(window.location.search);
+          const currentRedirect = urlParams.get('redirect') ?? window.location.pathname;
+          window.location.href = "/500?redirect=" + currentRedirect;
         }
       }
 
