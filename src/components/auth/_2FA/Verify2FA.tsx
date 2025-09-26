@@ -25,7 +25,7 @@ export const Verify2FA = ({}: {}) => {
 
       cookie.save("2faStatusChanged", "true", { path: "/" });
 
-      router.push("/");
+      router.push(router.query?.redirect?.toString() || "/");
     }
   }, [router.query, user]);
 

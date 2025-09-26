@@ -34,7 +34,7 @@ export const Login = ({}: {}) => {
     if (user) {
       if (router.query.rewrite == "true") {
         router.reload();
-      } else router.push("/");
+      } else router.push(router.query?.redirect?.toString() || "/");
     }
   }, [user]);
 
@@ -48,6 +48,7 @@ export const Login = ({}: {}) => {
                 router.reload();
               } else {
                 await refresh();
+                router.push(router.query?.redirect?.toString() || "/");
               }
             }}
           />
@@ -58,6 +59,7 @@ export const Login = ({}: {}) => {
                 router.reload();
               } else {
                 await refresh();
+                router.push(router.query?.redirect?.toString() || "/");
               }
             }}
           />
@@ -68,6 +70,7 @@ export const Login = ({}: {}) => {
                 router.reload();
               } else {
                 await refresh();
+                router.push(router.query?.redirect?.toString() || "/");
               }
             }}
           />
@@ -84,13 +87,14 @@ export const Login = ({}: {}) => {
               }).then(async (res) => {
                 console.log(res);
                 if (res.status == "Ok") {
-                  await refresh();
                   if (router.query.rewrite == "true") {
                     router.reload();
-                  } else await refresh();
-                  router.push(router.query?.redirect?.toString() || `/`, undefined, {
-                    shallow: false,
-                  });
+                  } else {
+                    await refresh();
+                    router.push(router.query?.redirect?.toString() || `/`, undefined, {
+                      shallow: false,
+                    });
+                  }
                 }
               });
             }}
