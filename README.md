@@ -1,5 +1,9 @@
 # NAUTH - Frontend
 
+<div align="center">
+  <img src="./public/email_banner.svg" alt="NAUTH Banner" />
+</div>
+
 A modern, secure, and feature-rich authentication and authorization microservice designed to be the backbone of nozsa.com security.
 
 This is the frontend for the NAUTH service, built with Next.js and TypeScript.
@@ -31,6 +35,10 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 Note: The development server runs with `NODE_TLS_REJECT_UNAUTHORIZED=0` to allow self-signed certificates.
 
+## Configuration
+
+refer to `src/.env.example` for the configuration.
+
 ## Available Scripts
 
 In the project directory, you can run:
@@ -51,10 +59,5 @@ It correctly bundles React in production mode and optimizes the build for the be
 
 Starts the application in production mode. The application should be compiled with `yarn build` first.
 
-### `yarn lint`
-
-Checks the code for formatting and linting issues using Biome.
-
-### `yarn format`
 
 Formats the code using Biome.
